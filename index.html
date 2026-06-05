@@ -498,7 +498,7 @@ function renderMatches(){
         btn.textContent="✓ ¡Guardado!"; btn.classList.add("save-ok");
         setTimeout(()=>{ btn.textContent="Guardar pronóstico"; btn.classList.remove("save-ok"); },1600);
         renderLeaderboard();
-      } catch(e){}
+      } catch(e){ showError("⚠️ Error al guardar: " + e.message); }
     })
   );
 }
@@ -565,13 +565,13 @@ function renderAdmin(){
       if(h===""||a==="") return;
       if(!STATE.results) STATE.results={};
       STATE.results[id]={h:parseInt(h),a:parseInt(a)};
-      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){}
+      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error al guardar: " + e.message); }
     })
   );
   document.querySelectorAll(".del-btn[data-id]").forEach(btn =>
     btn.addEventListener("click", async () => {
       delete STATE.results[btn.dataset.id];
-      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){}
+      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error al guardar: " + e.message); }
     })
   );
 }
