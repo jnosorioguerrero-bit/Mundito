@@ -574,9 +574,9 @@ function renderMatches(){
       }
     } else {
       center=`<div class="score-row">
-        <input class="sinput" id="ph_${m.id}" type="number" min="0" max="20" value="${p!==undefined?p.h:""}" placeholder="0">
+        <input class="sinput" id="ph_${m.id}" type="number" min="0" max="20" value="${p!==undefined?p.h:0}" placeholder="0">
         <span class="sdash">–</span>
-        <input class="sinput" id="pa_${m.id}" type="number" min="0" max="20" value="${p!==undefined?p.a:""}" placeholder="0">
+        <input class="sinput" id="pa_${m.id}" type="number" min="0" max="20" value="${p!==undefined?p.a:0}" placeholder="0">
       </div>`;
     }
 
@@ -653,7 +653,7 @@ function renderMatches(){
       if(m&&isLocked(m)){ return; }
       const h=document.getElementById("ph_"+id)?.value;
       const a=document.getElementById("pa_"+id)?.value;
-      if(h===""||a===""||h===undefined||a===undefined) return;
+      if(h===null||a===null||h===undefined||a===undefined||h===""||a==="") return;
       if(!STATE.preds[CU]) STATE.preds[CU]={};
       STATE.preds[CU][id]={h:parseInt(h),a:parseInt(a)};
       try {
