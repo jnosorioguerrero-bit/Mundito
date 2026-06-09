@@ -429,7 +429,7 @@ async function saveState(){
 
 onSnapshot(REF, snap => {
   const d = snap.exists() ? snap.data() : {};
-  STATE.users   = d.users   || [];
+  STATE.users   = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
   STATE.preds   = d.preds   || {};
   STATE.results = d.results || {};
   STATE.pins    = d.pins    || {};
@@ -748,6 +748,7 @@ function renderAdmin(){
       <span style="font-weight:600">${u} ${STATE.pins[u]?'🔐':''}</span>
       <div style="display:flex;gap:6px">
         <button onclick="adminResetPin('${u}')" style="padding:4px 10px;font-size:11px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:6px;cursor:pointer;font-weight:600">Reset PIN</button>
+        <button onclick="adminDeleteUser('${u}')" style="padding:4px 10px;font-size:11px;background:#FCEBEB;border:1px solid #E24B4A;color:#C8102E;border-radius:6px;cursor:pointer;font-weight:600">Eliminar</button>
       </div>
     </div>`).join('')}
   </div>`;
@@ -842,6 +843,14 @@ async function checkPin(){
     _pinBuffer='';
     updatePinDots();
   }
+}
+
+function adminDeleteUser(user){
+  if(!confirm('¿Eliminar usuario "'+user+'"? Se borrarán sus pronósticos.'))return;
+  STATE.users=STATE.users.filter(u=>u!==user&&u!==null&&u!=='null');
+  delete STATE.preds[user];
+  delete STATE.pins[user];
+  saveState().then(()=>{renderAdmin();renderLeaderboard();alert('Usuario eliminado ✓');});
 }
 
 function adminResetPin(user){
