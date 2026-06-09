@@ -659,8 +659,7 @@ function renderMatches(){
       STATE.preds[CU][id]={h:parseInt(h),a:parseInt(a)};
       try {
         await saveState();
-        btn.textContent="✓ ¡Guardado!"; btn.classList.add("save-ok");
-        setTimeout(()=>{ btn.textContent="Guardar pronóstico"; btn.classList.remove("save-ok"); },1600);
+        renderMatches();
         renderLeaderboard();
       } catch(e){ showError("⚠️ Error al guardar: "+e.message); }
     })
