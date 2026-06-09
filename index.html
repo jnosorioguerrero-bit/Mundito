@@ -166,6 +166,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cal-modal-title{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .cal-modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#aaa}
 
+
+.pin-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:300}
+.pin-box{background:#fff;border-radius:16px;padding:24px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.pin-title{font-size:16px;font-weight:800;margin-bottom:4px}
+.pin-sub{font-size:13px;color:#888;margin-bottom:16px}
+.pin-dots{display:flex;justify-content:center;gap:10px;margin-bottom:16px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #d0d0c8;background:#fff;transition:all .15s}
+.pin-dot.filled{background:var(--wc-blue);border-color:var(--wc-blue)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pin-key{padding:14px;font-size:20px;font-weight:700;border:1px solid #e0e0d8;border-radius:10px;cursor:pointer;background:#fafaf8;transition:all .15s;color:#1a1a1a}
+.pin-key:hover{background:#e8eeff;border-color:var(--wc-blue)}
+.pin-key.del{color:var(--wc-red);font-size:16px}
+.pin-error{color:var(--wc-red);font-size:13px;font-weight:700;margin-bottom:8px;min-height:18px}
+.pin-cancel{font-size:13px;color:#aaa;background:none;border:none;cursor:pointer;text-decoration:underline}
+
 </style>
 </head>
 <body>
@@ -192,6 +207,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="login-card">
       <div class="login-top"><div class="ball">⚽</div><h2>¡Únete a la quiniela!</h2><p>Pon tu nombre para guardar tus pronósticos</p></div>
       <div class="field"><label>Tu nombre o apodo</label><input type="text" id="name-input" placeholder="Ej: Juancho, El Profe..." maxlength="20"></div>
+      <div class="field"><label>PIN (4 dígitos)</label><input type="password" id="pin-input" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*"></div>
       <button class="btn-verde">⚽ Entrar a la quiniela</button>
       <div id="saved-section" style="display:none"><p class="saved-title">o elige tu perfil</p><div class="chips" id="chips"></div></div>
     </div>
@@ -202,13 +218,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="tab active"><i class="ti ti-ball-football"></i>Partidos</button>
       <button class="tab"><i class="ti ti-calendar"></i>Calendario</button>
       <button class="tab"><i class="ti ti-trophy"></i>Ranking</button>
-      <button class="tab"><i class="ti ti-shield-star"></i>Admin</button>
+      <button class="tab" id="tab-btn-admin"><i class="ti ti-shield-star"></i>Admin</button>
     </div>
     <div id="tab-matches" class="section active"></div>
     <div id="tab-calendar" class="section"></div>
     <div id="tab-leaderboard" class="section"></div>
     <div id="tab-admin" class="section"></div>
   </div>
+
+<!-- PIN MODAL -->
+<div id="pin-modal" class="pin-modal" style="display:none">
+  <div class="pin-box">
+    <div class="pin-title" id="pin-modal-title">🔐 Ingresa tu PIN</div>
+    <div class="pin-sub" id="pin-modal-sub">Perfil: <strong id="pin-modal-name"></strong></div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" style="visibility:hidden"></button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <button class="pin-cancel" onclick="closePinModal()">Cancelar</button>
+  </div>
+</div>
+
 </div>
 
 <script type="module">
@@ -351,7 +398,7 @@ function isLocked(m){
   return new Date() >= lockTime;
 }
 
-let STATE = {users:[], preds:{}, results:{}};
+let STATE = {users:[], preds:{}, results:{}, pins:{}};
 let CU = null;
 
 function showError(msg){
@@ -372,6 +419,7 @@ onSnapshot(REF, snap => {
   STATE.users   = d.users   || [];
   STATE.preds   = d.preds   || {};
   STATE.results = d.results || {};
+  STATE.pins    = d.pins    || {};
   showError("");
   renderChips();
   if(CU){ renderMatches(); renderLeaderboard(); renderAdmin(); }
@@ -382,22 +430,41 @@ document.querySelector(".btn-verde").addEventListener("click", doLogin);
 
 function doLogin(){
   const n = document.getElementById("name-input").value.trim();
+  const pin = document.getElementById("pin-input").value.trim();
   if(!n){ document.getElementById("name-input").focus(); return; }
-  loginAs(n);
+  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){
+    document.getElementById("pin-input").focus();
+    document.getElementById("pin-input").style.borderColor="var(--wc-red)";
+    return;
+  }
+  // existing user: verify PIN
+  if(STATE.users.includes(n)){
+    if(STATE.pins[n] && STATE.pins[n]!==pin){
+      document.getElementById("pin-input").style.borderColor="var(--wc-red)";
+      document.getElementById("pin-input").value="";
+      document.getElementById("pin-input").placeholder="PIN incorrecto";
+      return;
+    }
+  }
+  loginAs(n, pin);
 }
 
-async function loginAs(n){
+async function loginAs(n, pin){
   const btn = document.querySelector(".btn-verde");
   btn.textContent = "Conectando..."; btn.disabled = true;
   try {
     if(!STATE.users.includes(n)) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
+    if(pin && !STATE.pins[n]) STATE.pins[n] = pin; // save PIN on first login
     await saveState();
     CU = n;
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
     document.getElementById("welcome-msg").textContent = "👤 " + n;
-    renderMatches(); renderLeaderboard(); renderAdmin();
+    // show admin tab only for Juan
+    const adminBtn=document.getElementById("tab-btn-admin");
+    if(adminBtn) adminBtn.style.display=n==="Juan"?"":"none";
+    renderMatches(); renderLeaderboard(); if(n==="Juan") renderAdmin();
   } catch(e){
     showError("⚠️ No se pudo conectar: " + e.message);
     btn.textContent = "⚽ Entrar a la quiniela"; btn.disabled = false;
@@ -413,7 +480,10 @@ function renderChips(){
     `<button class="chip" data-name="${n.replace(/"/g,"&quot;")}">👤 ${n}</button>`
   ).join("");
   document.querySelectorAll("#chips .chip").forEach(btn =>
-    btn.addEventListener("click", () => loginAs(btn.dataset.name))
+    btn.addEventListener("click", () => {
+      if(STATE.pins[btn.dataset.name]) showPinModal(btn.dataset.name);
+      else loginAs(btn.dataset.name, null);
+    })
   );
 }
 
@@ -422,6 +492,8 @@ document.querySelector(".logout-btn").addEventListener("click", () => {
   document.getElementById("login-section").style.display = "block";
   document.getElementById("main-app").style.display = "none";
   document.getElementById("name-input").value = "";
+  const adminBtn=document.getElementById("tab-btn-admin");
+  if(adminBtn) adminBtn.style.display="none";
   renderChips(); showTab("matches");
 });
 
@@ -431,12 +503,13 @@ document.querySelectorAll(".tab").forEach((tab, i) => {
 });
 
 function showTab(t){
+  if(t==="admin"&&CU!=="Juan") return;
   ["matches","calendar","leaderboard","admin"].forEach((x,i)=>{
     document.getElementById("tab-"+x).classList.toggle("active", x===t);
     document.querySelectorAll(".tab")[i].classList.toggle("active", x===t);
   });
   if(t==="leaderboard") renderLeaderboard();
-  if(t==="admin") renderAdmin();
+  if(t==="admin"&&CU==="Juan") renderAdmin();
   if(t==="calendar") renderCalendar();
 }
 
@@ -629,7 +702,16 @@ function renderLeaderboard(){
 
 function renderAdmin(){
   const res=STATE.results||{};
-  let html=`<div class="admin-info">🛡️ Ingresa los resultados reales para calcular los puntos.</div>`;
+  let html=`<div class="admin-info">🛡️ Ingresa los resultados reales y gestiona usuarios.</div>
+  <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">👥 Usuarios registrados</div>
+    ${(STATE.users||[]).map(u=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #f0f0ea;font-size:13px">
+      <span style="font-weight:600">${u} ${STATE.pins[u]?'🔐':''}</span>
+      <div style="display:flex;gap:6px">
+        <button onclick="adminResetPin('${u}')" style="padding:4px 10px;font-size:11px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:6px;cursor:pointer;font-weight:600">Reset PIN</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
   MATCHES.forEach(m=>{
     const r=res[m.id];
     const rl=r?`<span style="color:var(--wc-blue);font-weight:700">${r.h}–${r.a}</span>`:`<span style="color:#bbb">Sin resultado</span>`;
@@ -667,6 +749,62 @@ function renderAdmin(){
       try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error: "+e.message); }
     })
   );
+}
+
+
+/* ---- PIN MODAL ---- */
+let _pinBuffer='';
+let _pinTarget=null;
+
+function showPinModal(name){
+  _pinBuffer='';
+  _pinTarget=name;
+  document.getElementById('pin-modal-name').textContent=name;
+  document.getElementById('pin-error').textContent='';
+  updatePinDots();
+  document.getElementById('pin-modal').style.display='flex';
+}
+
+function closePinModal(){
+  document.getElementById('pin-modal').style.display='none';
+  _pinBuffer='';_pinTarget=null;
+}
+
+function pinKey(k){
+  if(_pinBuffer.length>=4)return;
+  _pinBuffer+=k;
+  updatePinDots();
+  if(_pinBuffer.length===4) setTimeout(checkPin,150);
+}
+
+function pinDel(){
+  _pinBuffer=_pinBuffer.slice(0,-1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent='';
+}
+
+function updatePinDots(){
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('filled',i<_pinBuffer.length);
+  }
+}
+
+async function checkPin(){
+  const correct=STATE.pins[_pinTarget];
+  if(!correct||_pinBuffer===correct){
+    closePinModal();
+    await loginAs(_pinTarget, null);
+  } else {
+    document.getElementById('pin-error').textContent='PIN incorrecto, intenta de nuevo';
+    _pinBuffer='';
+    updatePinDots();
+  }
+}
+
+function adminResetPin(user){
+  if(!confirm('¿Resetear el PIN de '+user+'? Podrá ingresar sin PIN la próxima vez.'))return;
+  delete STATE.pins[user];
+  saveState().then(()=>{renderAdmin();alert('PIN de '+user+' reseteado ✓');});
 }
 
 /* ---- CALENDARIO ---- */
