@@ -651,9 +651,10 @@ function renderMatches(){
       const id=btn.dataset.id;
       const m=MATCHES.find(x=>x.id===id);
       if(m&&isLocked(m)){ return; }
-      const h=document.getElementById("ph_"+id)?.value;
-      const a=document.getElementById("pa_"+id)?.value;
-      if(h===null||a===null||h===undefined||a===undefined||h===""||a==="") return;
+      const hEl=document.getElementById("ph_"+id);
+      const aEl=document.getElementById("pa_"+id);
+      const h=hEl?(hEl.value===""?"0":hEl.value):"0";
+      const a=aEl?(aEl.value===""?"0":aEl.value):"0";
       if(!STATE.preds[CU]) STATE.preds[CU]={};
       STATE.preds[CU][id]={h:parseInt(h),a:parseInt(a)};
       try {
