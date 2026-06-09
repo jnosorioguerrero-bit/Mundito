@@ -455,7 +455,7 @@ async function loginAs(n, pin){
   try {
     if(!STATE.users.includes(n)) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
-    if(pin && !STATE.pins[n]) STATE.pins[n] = pin; // save PIN on first login
+    if(pin) STATE.pins[n] = pin; // always save PIN when provided via form
     await saveState();
     CU = n;
     document.getElementById("login-section").style.display = "none";
@@ -481,7 +481,8 @@ function renderChips(){
   ).join("");
   document.querySelectorAll("#chips .chip").forEach(btn =>
     btn.addEventListener("click", () => {
-      if(STATE.pins[btn.dataset.name]) showPinModal(btn.dataset.name);
+      const upin=STATE.pins[btn.dataset.name];
+      if(upin&&upin.length===4) showPinModal(btn.dataset.name);
       else loginAs(btn.dataset.name, null);
     })
   );
@@ -791,7 +792,11 @@ function updatePinDots(){
 
 async function checkPin(){
   const correct=STATE.pins[_pinTarget];
-  if(!correct||_pinBuffer===correct){
+  if(!correct){
+    // no PIN set yet — enter directly
+    closePinModal();
+    await loginAs(_pinTarget, null);
+  } else if(_pinBuffer===correct){
     closePinModal();
     await loginAs(_pinTarget, null);
   } else {
@@ -958,6 +963,15 @@ function showCalMatch(id){
   }
 }
 
+
+// Expose functions to global scope (needed for onclick handlers in module scripts)
+window.pinKey=pinKey;
+window.pinDel=pinDel;
+window.closePinModal=closePinModal;
+window.showCalMatch=showCalMatch;
+window.calPrev=calPrev;
+window.calNext=calNext;
+window.adminResetPin=adminResetPin;
 </script>
 </body>
 </html>
