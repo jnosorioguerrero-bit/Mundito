@@ -181,6 +181,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pin-error{color:var(--wc-red);font-size:13px;font-weight:700;margin-bottom:8px;min-height:18px}
 .pin-cancel{font-size:13px;color:#aaa;background:none;border:none;cursor:pointer;text-decoration:underline}
 
+
+.all-preds{margin-top:10px;padding-top:10px;border-top:1px solid #f0f0e8}
+.all-preds-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.all-preds-title:hover{color:#666}
+.pred-list{display:flex;flex-direction:column;gap:4px}
+.pred-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:4px 8px;border-radius:6px;background:#f8f8f4}
+.pred-item-name{font-weight:600;color:#555}
+.pred-item-score{font-weight:700;font-family:monospace;font-size:13px}
+.pred-item.pts3{background:#e8ffe8}.pred-item.pts3 .pred-item-score{color:var(--wc-green)}
+.pred-item.pts1{background:#e8eeff}.pred-item.pts1 .pred-item-score{color:var(--wc-blue)}
+.pred-item.pts0{background:#f4f4f0}.pred-item.pts0 .pred-item-score{color:#aaa}
+.pred-item.nopred{background:#fafaf8}.pred-item.nopred .pred-item-score{color:#ccc}
+
 </style>
 </head>
 <body>
@@ -576,6 +589,30 @@ function renderMatches(){
       predRow=`<div class="pred-row"><span class="pred-note">Mi pronóstico: ${p.h}–${p.a}</span>${pb}</div>`;
     }
 
+    // All predictions (only shown when match is done)
+    let allPredsRow="";
+    if(done){
+      const users=STATE.users||[];
+      const items=users.map(u=>{
+        const up=(STATE.preds[u]||{})[m.id];
+        const pts=up?calcPts(up,r):-1;
+        const cls=pts===3?'pts3':pts===1?'pts1':pts===0?'pts0':'nopred';
+        const medal=pts===3?'⭐':pts===1?'✓':pts===0?'✗':'—';
+        const scoreStr=up?`${up.h}–${up.a}`:'sin pron.';
+        return`<div class="pred-item ${cls}">
+          <span class="pred-item-name">${u===CU?'👤 '+u:u}</span>
+          <span class="pred-item-score">${scoreStr} ${medal}</span>
+        </div>`;
+      }).join('');
+      allPredsRow=`<div class="all-preds">
+        <div class="all-preds-title" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.querySelector('.chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
+          <span>👥 Pronósticos del grupo (${users.length})</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="pred-list" style="display:none">${items}</div>
+      </div>`;
+    }
+
     let actionRow="";
     if(!done){
       if(locked){
@@ -602,6 +639,7 @@ function renderMatches(){
       </div>
       ${predRow}
       ${actionRow}
+      ${allPredsRow}
     </div>`;
   });
 
