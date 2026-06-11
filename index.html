@@ -501,18 +501,23 @@ async function loginAs(n, pin){
   const btn = document.querySelector(".btn-verde");
   btn.textContent = "Conectando..."; btn.disabled = true;
   try {
-    CU = n; // asignar CU ANTES de cualquier escritura
+    if(!n || n==='null') throw new Error('Usuario inválido');
+    CU = n;
     const isNew = !STATE.users.includes(n);
     if(isNew) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
     if(pin) STATE.pins[n] = pin;
-    // escribir solo los campos de este usuario, no pisar a los demás
-    const patch = {
-      users: STATE.users.filter(u=>u!==null&&u!=='null'&&u!==undefined),
-      ['preds.'+n]: STATE.preds[n],
-      ['pins.'+n]: pin || STATE.pins[n] || ''
-    };
-    await updateDoc(REF, patch).catch(()=> setDoc(REF, JSON.parse(JSON.stringify(STATE)), {merge:true}));
+    // solo escribir en Firebase si es usuario nuevo o se actualizó el PIN
+    if(isNew || pin){
+      const patch = {
+        users: STATE.users.filter(u=>u!==null&&u!=='null'&&u!==undefined)
+      };
+      // solo agregar preds si es usuario nuevo (no pisar pronósticos existentes)
+      if(isNew) patch['preds.'+n] = {};
+      // solo guardar PIN si se ingresó uno
+      if(pin) patch['pins.'+n] = pin;
+      await updateDoc(REF, patch).catch(()=> setDoc(REF, JSON.parse(JSON.stringify(STATE)), {merge:true}));
+    }
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
     document.getElementById("welcome-msg").textContent = "👤 " + n;
