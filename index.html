@@ -411,7 +411,7 @@ function isLocked(m){
   return new Date() >= lockTime;
 }
 
-let STATE = {users:[], preds:{}, results:{}, pins:{}};
+let STATE = {users:[], preds:{}, results:{}, pins:{}, unlocked:[]};
 let CU = null;
 
 function showError(msg){
@@ -429,10 +429,11 @@ async function saveState(){
 
 onSnapshot(REF, snap => {
   const d = snap.exists() ? snap.data() : {};
-  STATE.users   = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
-  STATE.preds   = d.preds   || {};
-  STATE.results = d.results || {};
-  STATE.pins    = d.pins    || {};
+  STATE.users    = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
+  STATE.preds    = d.preds    || {};
+  STATE.results  = d.results  || {};
+  STATE.pins     = d.pins     || {};
+  STATE.unlocked = d.unlocked || [];
   showError("");
   renderChips();
   if(CU){ renderMatches(); renderLeaderboard(); renderAdmin(); }
@@ -554,6 +555,7 @@ function renderMatches(){
     }
     const r=res[m.id], p=my[m.id], done=r!==undefined;
     const locked=isLocked(m);
+    const isUnlocked = (STATE.unlocked||[]).includes(CU);
 
     let center;
     if(done){
@@ -564,6 +566,12 @@ function renderMatches(){
           <input class="sinput" value="${p.h}" disabled>
           <span class="sdash">–</span>
           <input class="sinput" value="${p.a}" disabled>
+        </div>`;
+      } else if(isUnlocked){
+        center=`<div class="score-row">
+          <input class="sinput" id="ph_${m.id}" type="number" min="0" max="20" value="0" placeholder="0">
+          <span class="sdash">–</span>
+          <input class="sinput" id="pa_${m.id}" type="number" min="0" max="20" value="0" placeholder="0">
         </div>`;
       } else {
         center=`<div class="score-row">
@@ -616,7 +624,11 @@ function renderMatches(){
     let actionRow="";
     if(!done){
       if(locked){
-        actionRow=`<div class="locked-msg">🔒 Pronóstico cerrado — el partido ya comenzó</div>`;
+        if(isUnlocked && !p){
+          actionRow=`<button class="save-btn" data-id="${m.id}" style="border-color:#E67E00;color:#E67E00">📝 Guardar pronóstico tardío</button>`;
+        } else {
+          actionRow=`<div class="locked-msg">🔒 Pronóstico cerrado — el partido ya comenzó</div>`;
+        }
       } else {
         actionRow=`<button class="save-btn" data-id="${m.id}">Guardar pronóstico</button>`;
       }
@@ -650,7 +662,10 @@ function renderMatches(){
     btn.addEventListener("click", async () => {
       const id=btn.dataset.id;
       const m=MATCHES.find(x=>x.id===id);
-      if(m&&isLocked(m)){ return; }
+      const isUnlocked=(STATE.unlocked||[]).includes(CU);
+      if(m&&isLocked(m)&&!isUnlocked){ return; }
+      // Si está desbloqueado y ya tiene pronóstico, no permitir cambiar
+      if(m&&isLocked(m)&&isUnlocked&&(STATE.preds[CU]||{})[id]!==undefined){ return; }
       const hEl=document.getElementById("ph_"+id);
       const aEl=document.getElementById("pa_"+id);
       const h=hEl?(hEl.value===""?"0":hEl.value):"0";
@@ -744,13 +759,17 @@ function renderAdmin(){
   let html=`<div class="admin-info">🛡️ Ingresa los resultados reales y gestiona usuarios.</div>
   <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
     <div style="font-size:13px;font-weight:700;margin-bottom:10px">👥 Usuarios registrados</div>
-    ${(STATE.users||[]).map(u=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #f0f0ea;font-size:13px">
-      <span style="font-weight:600">${u} ${STATE.pins[u]?'🔐':''}</span>
+  ${(STATE.users||[]).map(u=>{
+    const isUnlocked=(STATE.unlocked||[]).includes(u);
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #f0f0ea;font-size:13px">
+      <span style="font-weight:600">${u} ${STATE.pins[u]?'🔐':''} ${isUnlocked?'<span style="font-size:11px;background:#fff3cd;color:#856404;border-radius:4px;padding:2px 6px;font-weight:700">📝 histórico</span>':''}</span>
       <div style="display:flex;gap:6px">
+        ${u!=='Juan'?`<button onclick="adminToggleUnlock('${u}')" style="padding:4px 10px;font-size:11px;background:${isUnlocked?'#f0f0ea':'#e8f4ff'};border:1px solid ${isUnlocked?'#ccc':'var(--wc-blue)'};color:${isUnlocked?'#888':'var(--wc-blue)'};border-radius:6px;cursor:pointer;font-weight:600">${isUnlocked?'🔒 Cerrar':'🔓 Histórico'}</button>`:''}
         <button onclick="adminResetPin('${u}')" style="padding:4px 10px;font-size:11px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:6px;cursor:pointer;font-weight:600">Reset PIN</button>
         <button onclick="adminDeleteUser('${u}')" style="padding:4px 10px;font-size:11px;background:#FCEBEB;border:1px solid #E24B4A;color:#C8102E;border-radius:6px;cursor:pointer;font-weight:600">Eliminar</button>
       </div>
-    </div>`).join('')}
+    </div>`;
+  }).join('')}
   </div>`;
   MATCHES.forEach(m=>{
     const r=res[m.id];
@@ -842,6 +861,18 @@ async function checkPin(){
     document.getElementById('pin-error').textContent='PIN incorrecto, intenta de nuevo';
     _pinBuffer='';
     updatePinDots();
+  }
+}
+
+function adminToggleUnlock(user){
+  if(!STATE.unlocked) STATE.unlocked=[];
+  const idx=STATE.unlocked.indexOf(user);
+  if(idx===-1){
+    STATE.unlocked.push(user);
+    saveState().then(()=>{renderAdmin();});
+  } else {
+    STATE.unlocked.splice(idx,1);
+    saveState().then(()=>{renderAdmin();});
   }
 }
 
@@ -947,17 +978,26 @@ function showCalMatch(id){
   const res=STATE.results||{};
   const my=(STATE.preds&&STATE.preds[CU])||{};
   const r=res[m.id], p=my[m.id], done=r!==undefined, locked=isLocked(m);
+  const isUnlocked=(STATE.unlocked||[]).includes(CU);
   const hora=m.dt.slice(11,16);
 
   let center;
   if(done){
     center=`<div class="real-score-row" style="justify-content:center"><span class="rscore">${r.h}</span><span class="rdash">–</span><span class="rscore">${r.a}</span></div>`;
   } else if(locked){
-    center=`<div class="score-row" style="justify-content:center">
-      <input class="sinput" value="${p?p.h:''}" disabled placeholder="?">
-      <span class="sdash">–</span>
-      <input class="sinput" value="${p?p.a:''}" disabled placeholder="?">
-    </div>`;
+    if(isUnlocked && !p){
+      center=`<div class="score-row" style="justify-content:center">
+        <input class="sinput" id="cph_${m.id}" type="number" min="0" max="20" value="0" placeholder="0">
+        <span class="sdash">–</span>
+        <input class="sinput" id="cpa_${m.id}" type="number" min="0" max="20" value="0" placeholder="0">
+      </div>`;
+    } else {
+      center=`<div class="score-row" style="justify-content:center">
+        <input class="sinput" value="${p?p.h:''}" disabled placeholder="?">
+        <span class="sdash">–</span>
+        <input class="sinput" value="${p?p.a:''}" disabled placeholder="?">
+      </div>`;
+    }
   } else {
     center=`<div class="score-row" style="justify-content:center">
       <input class="sinput" id="cph_${m.id}" type="number" min="0" max="20" value="${p!==undefined?p.h:''}" placeholder="0">
@@ -987,7 +1027,8 @@ function showCalMatch(id){
     ${pts?`<div style="text-align:center;margin-bottom:10px">${pts}</div>`:''}
     ${p&&!done?`<div style="text-align:center;font-size:12px;color:#888;margin-bottom:8px">Mi pronóstico: ${p.h}–${p.a}</div>`:''}
     ${!done&&!locked?`<button class="save-btn" id="cal-save-${m.id}">Guardar pronóstico</button>`:''}
-    ${locked&&!done?`<div class="locked-msg">🔒 Pronóstico cerrado</div>`:''}
+    ${locked&&!done&&isUnlocked&&!p?`<button class="save-btn" id="cal-save-${m.id}" style="border-color:#E67E00;color:#E67E00">📝 Guardar pronóstico tardío</button>`:''}
+    ${locked&&!done&&(!isUnlocked||p)?`<div class="locked-msg">🔒 Pronóstico cerrado</div>`:''}
   </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
@@ -995,6 +1036,8 @@ function showCalMatch(id){
   const saveBtn=document.getElementById('cal-save-'+m.id);
   if(saveBtn){
     saveBtn.addEventListener('click',async()=>{
+      // Si está locked y ya tiene pronóstico, no guardar
+      if(locked&&(STATE.preds[CU]||{})[m.id]!==undefined) return;
       const h=document.getElementById('cph_'+m.id)?.value;
       const a=document.getElementById('cpa_'+m.id)?.value;
       if(h===''||a==='')return;
@@ -1015,6 +1058,7 @@ function showCalMatch(id){
 window.pinKey=pinKey;
 window.adminDeleteUser=adminDeleteUser;
 window.adminResetPin=adminResetPin;
+window.adminToggleUnlock=adminToggleUnlock;
 window.pinDel=pinDel;
 window.closePinModal=closePinModal;
 window.showCalMatch=showCalMatch;
