@@ -222,7 +222,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="field"><label>Tu nombre o apodo</label><input type="text" id="name-input" placeholder="Ej: Juancho, El Profe..." maxlength="20"></div>
       <div class="field"><label>PIN (4 dígitos)</label><input type="password" id="pin-input" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*"></div>
       <button class="btn-verde">⚽ Entrar a la quiniela</button>
-      <div id="saved-section" style="display:none"><p class="saved-title">o elige tu perfil</p><div class="chips" id="chips"></div></div>
+      <div id="saved-section" style="display:none"><div class="chips" id="chips"></div></div>
     </div>
   </div>
   <div id="main-app" style="display:none">
@@ -539,20 +539,9 @@ async function loginAs(n, pin){
 }
 
 function renderChips(){
-  const u = STATE.users || [];
+  // selector de perfiles desactivado — login siempre por nombre + PIN
   const sec = document.getElementById("saved-section");
-  if(!u.length){ sec.style.display="none"; return; }
-  sec.style.display = "block";
-  document.getElementById("chips").innerHTML = u.map(n =>
-    `<button class="chip" data-name="${n.replace(/"/g,"&quot;")}">👤 ${n}</button>`
-  ).join("");
-  document.querySelectorAll("#chips .chip").forEach(btn =>
-    btn.addEventListener("click", () => {
-      const upin=STATE.pins[btn.dataset.name];
-      if(upin&&upin.length===4) showPinModal(btn.dataset.name);
-      else loginAs(btn.dataset.name, null);
-    })
-  );
+  if(sec) sec.style.display="none";
 }
 
 document.querySelector(".logout-btn").addEventListener("click", () => {
