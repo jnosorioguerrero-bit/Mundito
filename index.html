@@ -461,7 +461,10 @@ async function deleteUserFromDB(user){
 onSnapshot(REF, snap => {
   const d = snap.exists() ? snap.data() : {};
   STATE.users    = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
-  STATE.preds    = d.preds    || {};
+  const rawPreds = d.preds || {};
+  // limpiar claves null que pudieron quedar de versiones anteriores
+  Object.keys(rawPreds).forEach(k=>{ if(k==='null'||k===null||k===undefined) delete rawPreds[k]; });
+  STATE.preds    = rawPreds;
   STATE.results  = d.results  || {};
   STATE.pins     = d.pins     || {};
   STATE.unlocked = d.unlocked || [];
@@ -498,17 +501,31 @@ async function loginAs(n, pin){
   const btn = document.querySelector(".btn-verde");
   btn.textContent = "Conectando..."; btn.disabled = true;
   try {
-    if(!STATE.users.includes(n)) STATE.users.push(n);
+    CU = n; // asignar CU ANTES de cualquier escritura
+    const isNew = !STATE.users.includes(n);
+    if(isNew) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
-    if(pin) STATE.pins[n] = pin; // always save PIN when provided via form
-    await saveState();
-    CU = n;
+    if(pin) STATE.pins[n] = pin;
+    // escribir solo los campos de este usuario, no pisar a los demás
+    const patch = {
+      users: STATE.users.filter(u=>u!==null&&u!=='null'&&u!==undefined),
+      ['preds.'+n]: STATE.preds[n],
+      ['pins.'+n]: pin || STATE.pins[n] || ''
+    };
+    await updateDoc(REF, patch).catch(()=> setDoc(REF, JSON.parse(JSON.stringify(STATE)), {merge:true}));
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
     document.getElementById("welcome-msg").textContent = "👤 " + n;
     // show admin tab only for Juan
     const adminBtn=document.getElementById("tab-btn-admin");
     if(adminBtn) adminBtn.style.display=n==="Juan"?"":"none";
+    // limpiar usuario null de Firebase si existe (limpieza automática)
+    if(n==="Juan" && STATE.preds && STATE.preds["null"]){
+      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({deleteField})=>{
+        updateDoc(REF, {"preds.null": deleteField()}).catch(()=>{});
+      });
+      delete STATE.preds["null"];
+    }
     renderMatches(); renderLeaderboard(); if(n==="Juan") renderAdmin();
   } catch(e){
     showError("⚠️ No se pudo conectar: " + e.message);
