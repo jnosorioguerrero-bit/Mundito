@@ -222,7 +222,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="field"><label>Tu nombre o apodo</label><input type="text" id="name-input" placeholder="Ej: Juancho, El Profe..." maxlength="20"></div>
       <div class="field"><label>PIN (4 dígitos)</label><input type="password" id="pin-input" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*"></div>
       <button class="btn-verde">⚽ Entrar a la quiniela</button>
-      <div id="saved-section" style="display:none"><div class="chips" id="chips"></div></div>
+      <div id="saved-section" style="display:none"><p class="saved-title">o elige tu perfil</p><div class="chips" id="chips"></div></div>
     </div>
   </div>
   <div id="main-app" style="display:none">
@@ -273,7 +273,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB5s7sXqgONnTYyxFOiedyqgcAKNxSy6Eo",
@@ -287,6 +287,144 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 const REF = doc(db, "quiniela", "data");
+
+// ─── AUTO-SYNC CONFIG ────────────────────────────────────────────────────────
+const FDATA_TOKEN = "a02c2774534b49d7a07f08399b9a5499";
+const FDATA_URL   = "https://api.football-data.org/v4/competitions/WC/matches?season=2026";
+const SYNC_INTERVAL_MS = 5 * 60 * 1000; // sincronizar cada 5 minutos
+
+// Mapeo nombre football-data.org → nombre en tu quiniela
+// (solo los que difieren)
+const TEAM_MAP = {
+  "Mexico":             "México",
+  "South Africa":       "Sudáfrica",
+  "Korea Republic":     "Corea del Sur",
+  "Czech Republic":     "Rep. Checa",
+  "Canada":             "Canadá",
+  "Bosnia and Herzegovina": "Bosnia y Herz.",
+  "United States":      "Estados Unidos",
+  "Qatar":              "Catar",
+  "Switzerland":        "Suiza",
+  "Morocco":            "Marruecos",
+  "Haiti":              "Haití",
+  "Scotland":           "Escocia",
+  "Turkey":             "Turquía",
+  "Germany":            "Alemania",
+  "Curaçao":            "Curazao",
+  "Netherlands":        "Países Bajos",
+  "Japan":              "Japón",
+  "Ivory Coast":        "Costa de Marfil",
+  "Sweden":             "Suecia",
+  "Tunisia":            "Túnez",
+  "Spain":              "España",
+  "Cape Verde":         "Cabo Verde",
+  "Belgium":            "Bélgica",
+  "Egypt":              "Egipto",
+  "Saudi Arabia":       "Arabia Saudita",
+  "Uruguay":            "Uruguay",
+  "Iran":               "Irán",
+  "New Zealand":        "Nueva Zelanda",
+  "France":             "Francia",
+  "Senegal":            "Senegal",
+  "Iraq":               "Irak",
+  "Norway":             "Noruega",
+  "Argentina":          "Argentina",
+  "Algeria":            "Argelia",
+  "Austria":            "Austria",
+  "Jordan":             "Jordania",
+  "Portugal":           "Portugal",
+  "DR Congo":           "RD Congo",
+  "England":            "Inglaterra",
+  "Croatia":            "Croacia",
+  "Ghana":              "Ghana",
+  "Panama":             "Panamá",
+  "Uzbekistan":         "Uzbekistán",
+  "Colombia":           "Colombia",
+  "Chile":              "Chile",
+  "Serbia":             "Serbia",
+  "Kenya":              "Kenia",
+  "Venezuela":          "Venezuela",
+  "Ecuador":            "Ecuador",
+  "Nigeria":            "Nigeria",
+  "Brazil":             "Brasil",
+  "Australia":          "Australia",
+  "Paraguay":           "Paraguay",
+};
+
+function normalizeTeam(name) {
+  return TEAM_MAP[name] || name;
+}
+
+async function fetchAndSyncResults() {
+  try {
+    const resp = await fetch(FDATA_URL, {
+      headers: { "X-Auth-Token": FDATA_TOKEN }
+    });
+    if (!resp.ok) {
+      console.warn("Auto-sync: error HTTP", resp.status);
+      return false;
+    }
+    const data = await resp.json();
+    const matches = data.matches || [];
+
+    // Solo los partidos terminados
+    const finished = matches.filter(m =>
+      m.status === "FINISHED" &&
+      m.score?.fullTime?.home !== null &&
+      m.score?.fullTime?.away !== null
+    );
+
+    if (!finished.length) return false;
+
+    let updated = false;
+    for (const fm of finished) {
+      const hName = normalizeTeam(fm.homeTeam.name);
+      const aName = normalizeTeam(fm.awayTeam.name);
+      const hScore = fm.score.fullTime.home;
+      const aScore = fm.score.fullTime.away;
+
+      // Buscar el partido en MATCHES por nombres de equipos
+      const local = MATCHES.find(m =>
+        m.home === hName && m.away === aName
+      );
+      if (!local) continue;
+
+      // Solo actualizar si no existe o el score cambió
+      const existing = STATE.results[local.id];
+      if (!existing || existing.h !== hScore || existing.a !== aScore) {
+        if (!STATE.results) STATE.results = {};
+        STATE.results[local.id] = { h: hScore, a: aScore };
+        updated = true;
+      }
+    }
+
+    if (updated) {
+      STATE.lastSync = new Date().toISOString();
+      await saveState();
+      renderMatches();
+      renderLeaderboard();
+      if (CU === "Juan") renderAdmin();
+      console.log("Auto-sync: resultados actualizados ✓");
+    } else {
+      STATE.lastSync = new Date().toISOString();
+      console.log("Auto-sync: sin cambios");
+    }
+    return updated;
+  } catch(e) {
+    console.warn("Auto-sync error:", e.message);
+    return false;
+  }
+}
+
+let _syncInterval = null;
+function startAutoSync() {
+  // Sync inmediato al abrir
+  fetchAndSyncResults();
+  // Luego cada 5 minutos
+  if (_syncInterval) clearInterval(_syncInterval);
+  _syncInterval = setInterval(fetchAndSyncResults, SYNC_INTERVAL_MS);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // MATCHES con datetime real (hora Chile) y ordenados cronológicamente
 // dt: "YYYY-MM-DDTHH:MM" hora Chile
@@ -427,44 +565,10 @@ async function saveState(){
   await setDoc(REF, JSON.parse(JSON.stringify(STATE)));
 }
 
-async function savePred(user, matchId, pred){
-  await updateDoc(REF, { ["preds."+user+"."+matchId]: pred });
-}
-
-async function saveResult(matchId, result){
-  await updateDoc(REF, { ["results."+matchId]: result });
-}
-
-async function deleteResult(matchId){
-  const { deleteField } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  await updateDoc(REF, { ["results."+matchId]: deleteField() });
-}
-
-async function saveUnlocked(unlocked){
-  await updateDoc(REF, { unlocked: unlocked });
-}
-
-async function savePin(user, pin){
-  await updateDoc(REF, { ["pins."+user]: pin });
-}
-
-async function deleteUserFromDB(user){
-  const { deleteField } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const newUsers = STATE.users.filter(u=>u!==user);
-  await updateDoc(REF, {
-    users: newUsers,
-    ["preds."+user]: deleteField(),
-    ["pins."+user]: deleteField()
-  });
-}
-
 onSnapshot(REF, snap => {
   const d = snap.exists() ? snap.data() : {};
   STATE.users    = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
-  const rawPreds = d.preds || {};
-  // limpiar claves null que pudieron quedar de versiones anteriores
-  Object.keys(rawPreds).forEach(k=>{ if(k==='null'||k===null||k===undefined) delete rawPreds[k]; });
-  STATE.preds    = rawPreds;
+  STATE.preds    = d.preds    || {};
   STATE.results  = d.results  || {};
   STATE.pins     = d.pins     || {};
   STATE.unlocked = d.unlocked || [];
@@ -501,37 +605,20 @@ async function loginAs(n, pin){
   const btn = document.querySelector(".btn-verde");
   btn.textContent = "Conectando..."; btn.disabled = true;
   try {
-    if(!n || n==='null') throw new Error('Usuario inválido');
-    CU = n;
-    const isNew = !STATE.users.includes(n);
-    if(isNew) STATE.users.push(n);
+    if(!STATE.users.includes(n)) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
-    if(pin) STATE.pins[n] = pin;
-    // solo escribir en Firebase si es usuario nuevo o se actualizó el PIN
-    if(isNew || pin){
-      const patch = {
-        users: STATE.users.filter(u=>u!==null&&u!=='null'&&u!==undefined)
-      };
-      // solo agregar preds si es usuario nuevo (no pisar pronósticos existentes)
-      if(isNew) patch['preds.'+n] = {};
-      // solo guardar PIN si se ingresó uno
-      if(pin) patch['pins.'+n] = pin;
-      await updateDoc(REF, patch).catch(()=> setDoc(REF, JSON.parse(JSON.stringify(STATE)), {merge:true}));
-    }
+    if(pin) STATE.pins[n] = pin; // always save PIN when provided via form
+    await saveState();
+    CU = n;
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
     document.getElementById("welcome-msg").textContent = "👤 " + n;
     // show admin tab only for Juan
     const adminBtn=document.getElementById("tab-btn-admin");
     if(adminBtn) adminBtn.style.display=n==="Juan"?"":"none";
-    // limpiar usuario null de Firebase si existe (limpieza automática)
-    if(n==="Juan" && STATE.preds && STATE.preds["null"]){
-      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({deleteField})=>{
-        updateDoc(REF, {"preds.null": deleteField()}).catch(()=>{});
-      });
-      delete STATE.preds["null"];
-    }
     renderMatches(); renderLeaderboard(); if(n==="Juan") renderAdmin();
+    // Arrancar sincronización automática de resultados
+    startAutoSync();
   } catch(e){
     showError("⚠️ No se pudo conectar: " + e.message);
     btn.textContent = "⚽ Entrar a la quiniela"; btn.disabled = false;
@@ -539,9 +626,20 @@ async function loginAs(n, pin){
 }
 
 function renderChips(){
-  // selector de perfiles desactivado — login siempre por nombre + PIN
+  const u = STATE.users || [];
   const sec = document.getElementById("saved-section");
-  if(sec) sec.style.display="none";
+  if(!u.length){ sec.style.display="none"; return; }
+  sec.style.display = "block";
+  document.getElementById("chips").innerHTML = u.map(n =>
+    `<button class="chip" data-name="${n.replace(/"/g,"&quot;")}">👤 ${n}</button>`
+  ).join("");
+  document.querySelectorAll("#chips .chip").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const upin=STATE.pins[btn.dataset.name];
+      if(upin&&upin.length===4) showPinModal(btn.dataset.name);
+      else loginAs(btn.dataset.name, null);
+    })
+  );
 }
 
 document.querySelector(".logout-btn").addEventListener("click", () => {
@@ -713,10 +811,9 @@ function renderMatches(){
       const h=hEl?(hEl.value===""?"0":hEl.value):"0";
       const a=aEl?(aEl.value===""?"0":aEl.value):"0";
       if(!STATE.preds[CU]) STATE.preds[CU]={};
-      const pred={h:parseInt(h),a:parseInt(a)};
-      STATE.preds[CU][id]=pred;
+      STATE.preds[CU][id]={h:parseInt(h),a:parseInt(a)};
       try {
-        await savePred(CU, id, pred);
+        await saveState();
         renderMatches();
         renderLeaderboard();
       } catch(e){ showError("⚠️ Error al guardar: "+e.message); }
@@ -801,6 +898,14 @@ function renderAdmin(){
   const res=STATE.results||{};
   let html=`<div class="admin-info">🛡️ Ingresa los resultados reales y gestiona usuarios.</div>
   <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700">🔄 Auto-sync resultados</div>
+      <button id="btn-sync-now" onclick="adminSyncNow()" style="padding:6px 14px;font-size:12px;font-weight:700;background:#e8f4ff;border:1.5px solid var(--wc-blue);color:var(--wc-blue);border-radius:8px;cursor:pointer">⚡ Sincronizar ahora</button>
+    </div>
+    <div style="font-size:12px;color:#888">${STATE.lastSync ? '✓ Último sync: ' + new Date(STATE.lastSync).toLocaleString('es-CL') : '⏳ Sin sincronizar aún'}</div>
+    <div style="font-size:11px;color:#aaa;margin-top:4px">Se sincroniza automáticamente cada 5 minutos mientras alguien tenga la app abierta.</div>
+  </div>
+  <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
     <div style="font-size:13px;font-weight:700;margin-bottom:10px">👥 Usuarios registrados</div>
   ${(STATE.users||[]).map(u=>{
     const isUnlocked=(STATE.unlocked||[]).includes(u);
@@ -813,6 +918,7 @@ function renderAdmin(){
       </div>
     </div>`;
   }).join('')}
+  </div>
   </div>`;
   MATCHES.forEach(m=>{
     const r=res[m.id];
@@ -841,16 +947,14 @@ function renderAdmin(){
       const a=document.getElementById("ra_"+id).value;
       if(h===""||a==="") return;
       if(!STATE.results) STATE.results={};
-      const res={h:parseInt(h),a:parseInt(a)};
-      STATE.results[id]=res;
-      try{ await saveResult(id, res); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error: "+e.message); }
+      STATE.results[id]={h:parseInt(h),a:parseInt(a)};
+      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error: "+e.message); }
     })
   );
   document.querySelectorAll(".del-btn[data-id]").forEach(btn =>
     btn.addEventListener("click", async () => {
-      const delId=btn.dataset.id;
-      delete STATE.results[delId];
-      try{ await deleteResult(delId); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error: "+e.message); }
+      delete STATE.results[btn.dataset.id];
+      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error: "+e.message); }
     })
   );
 }
@@ -909,15 +1013,24 @@ async function checkPin(){
   }
 }
 
+async function adminSyncNow(){
+  const btn = document.getElementById('btn-sync-now');
+  if(btn){ btn.textContent='⏳ Sincronizando...'; btn.disabled=true; }
+  const updated = await fetchAndSyncResults();
+  if(btn){ btn.textContent = updated ? '✓ ¡Actualizado!' : '✓ Sin cambios'; btn.disabled=false; }
+  setTimeout(()=>{ if(btn) btn.textContent='⚡ Sincronizar ahora'; }, 2000);
+  renderAdmin();
+}
+
 function adminToggleUnlock(user){
   if(!STATE.unlocked) STATE.unlocked=[];
   const idx=STATE.unlocked.indexOf(user);
   if(idx===-1){
     STATE.unlocked.push(user);
-    saveUnlocked(STATE.unlocked).then(()=>{renderAdmin();});
+    saveState().then(()=>{renderAdmin();});
   } else {
     STATE.unlocked.splice(idx,1);
-    saveUnlocked(STATE.unlocked).then(()=>{renderAdmin();});
+    saveState().then(()=>{renderAdmin();});
   }
 }
 
@@ -926,13 +1039,13 @@ function adminDeleteUser(user){
   STATE.users=STATE.users.filter(u=>u!==user&&u!==null&&u!=='null');
   delete STATE.preds[user];
   delete STATE.pins[user];
-  deleteUserFromDB(user).then(()=>{renderAdmin();renderLeaderboard();alert('Usuario eliminado ✓');});
+  saveState().then(()=>{renderAdmin();renderLeaderboard();alert('Usuario eliminado ✓');});
 }
 
 function adminResetPin(user){
   if(!confirm('¿Resetear el PIN de '+user+'? Podrá ingresar sin PIN la próxima vez.'))return;
   delete STATE.pins[user];
-  savePin(user, "").then(()=>{renderAdmin();alert('PIN de '+user+' reseteado ✓');});
+  saveState().then(()=>{renderAdmin();alert('PIN de '+user+' reseteado ✓');});
 }
 
 /* ---- CALENDARIO ---- */
@@ -1087,10 +1200,9 @@ function showCalMatch(id){
       const a=document.getElementById('cpa_'+m.id)?.value;
       if(h===''||a==='')return;
       if(!STATE.preds[CU])STATE.preds[CU]={};
-      const cpred={h:parseInt(h),a:parseInt(a)};
-      STATE.preds[CU][m.id]=cpred;
+      STATE.preds[CU][m.id]={h:parseInt(h),a:parseInt(a)};
       try{
-        await savePred(CU, m.id, cpred);
+        await saveState();
         saveBtn.textContent='✓ ¡Guardado!';saveBtn.classList.add('save-ok');
         setTimeout(()=>modal.remove(),1200);
         renderCalendar();renderLeaderboard();
@@ -1105,6 +1217,7 @@ window.pinKey=pinKey;
 window.adminDeleteUser=adminDeleteUser;
 window.adminResetPin=adminResetPin;
 window.adminToggleUnlock=adminToggleUnlock;
+window.adminSyncNow=adminSyncNow;
 window.pinDel=pinDel;
 window.closePinModal=closePinModal;
 window.showCalMatch=showCalMatch;
