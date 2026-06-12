@@ -1,0 +1,27 @@
+name: Sync resultados Mundial 2026
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # cada hora en punto
+    - cron: '30 * * * *'  # cada hora y media (para partidos nocturnos)
+  workflow_dispatch:        # también puedes correrlo manualmente desde GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests firebase-admin
+
+      - name: Sincronizar resultados
+        env:
+          FDATA_TOKEN: ${{ secrets.FDATA_TOKEN }}
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+        run: python sync_results.py
