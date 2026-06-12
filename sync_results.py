@@ -14,6 +14,7 @@ TEAM_MAP = {
     "Czechia":                   "Rep. Checa",
     "Canada":                    "Canadá",
     "Bosnia and Herzegovina":    "Bosnia y Herz.",
+    "Bosnia-Herzegovina":        "Bosnia y Herz.",
     "United States":             "Estados Unidos",
     "Qatar":                     "Catar",
     "Switzerland":               "Suiza",
