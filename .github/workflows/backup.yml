@@ -1,0 +1,35 @@
+name: Backup Firebase diario
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # todos los días a las 06:00 UTC (02:00 Chile)
+  workflow_dispatch:       # también manual
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install firebase-admin
+
+      - name: Hacer backup
+        env:
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+        run: python backup_firebase.py
+
+      - name: Guardar backup en el repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p backups
+          mv backup_*.json backups/
+          git add backups/
+          git diff --staged --quiet || git commit -m "Backup automático $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
