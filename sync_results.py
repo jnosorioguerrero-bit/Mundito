@@ -10,8 +10,8 @@ FDATA_URL   = "https://api.football-data.org/v4/competitions/WC/matches?season=2
 TEAM_MAP = {
     "Mexico":                   "México",
     "South Africa":              "Sudáfrica",
-    "Korea Republic":            "Corea del Sur",
-    "Czech Republic":            "Rep. Checa",
+    "South Korea":               "Corea del Sur",
+    "Czechia":                   "Rep. Checa",
     "Canada":                    "Canadá",
     "Bosnia and Herzegovina":    "Bosnia y Herz.",
     "United States":             "Estados Unidos",
