@@ -610,9 +610,19 @@ async function loginAs(n, pin){
   const btn = document.querySelector(".btn-verde");
   btn.textContent = "Conectando..."; btn.disabled = true;
   try {
+    // Leer Firebase fresco antes de modificar, para no pisar datos
+    const snap = await getDoc(REF);
+    if(snap.exists()){
+      const d = snap.data();
+      STATE.users    = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
+      STATE.preds    = d.preds    || {};
+      STATE.results  = d.results  || {};
+      STATE.pins     = d.pins     || {};
+      STATE.unlocked = d.unlocked || [];
+    }
     if(!STATE.users.includes(n)) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
-    if(pin) STATE.pins[n] = pin; // always save PIN when provided via form
+    if(pin) STATE.pins[n] = pin;
     await saveState();
     CU = n;
     document.getElementById("login-section").style.display = "none";
