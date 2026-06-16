@@ -34,6 +34,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tab:nth-child(2).active{background:#2E8B57}
 .tab:nth-child(3).active{background:var(--wc-red)}
 .tab:nth-child(4).active{background:var(--wc-green)}
+/* Apuesta campeón */
+.champion-card{background:linear-gradient(135deg,#003DA5,#6A0DAD);border-radius:16px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden}
+.champion-card::before{content:'🏆';position:absolute;right:-10px;top:-10px;font-size:80px;opacity:0.15}
+.champion-title{font-size:15px;font-weight:800;margin-bottom:4px;letter-spacing:.5px}
+.champion-sub{font-size:12px;opacity:.8;margin-bottom:14px}
+.champion-select{width:100%;padding:10px 14px;font-size:14px;font-weight:700;border:2px solid rgba(255,255,255,0.4);border-radius:10px;background:rgba(255,255,255,0.15);color:#fff;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none}
+.champion-select option{background:#003DA5;color:#fff}
+.champion-select:disabled{opacity:.6;cursor:not-allowed}
+.champion-btn{margin-top:10px;width:100%;padding:10px;font-size:14px;font-weight:700;background:#FFD700;color:#1a1a1a;border:none;border-radius:10px;cursor:pointer;transition:opacity .15s}
+.champion-btn:hover{opacity:.88}
+.champion-btn:disabled{opacity:.5;cursor:not-allowed}
+.champion-locked{margin-top:10px;font-size:12px;background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;text-align:center;opacity:.8}
+.champion-picked{margin-top:10px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px}
+.champion-picked img{width:36px;height:24px;object-fit:cover;border-radius:4px;border:1.5px solid rgba(255,255,255,.4)}
+.champion-picked-name{font-size:15px;font-weight:800}
+.champion-picked-pts{font-size:11px;opacity:.8;margin-top:2px}
 .section{display:none}
 .section.active{display:block}
 .login-card{background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:1.75rem;max-width:380px;margin:0 auto;border-top:4px solid var(--wc-blue)}
@@ -229,11 +245,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="user-bar"><span id="welcome-msg"></span><button class="logout-btn">Cambiar usuario</button></div>
     <div class="tabs">
       <button class="tab active"><i class="ti ti-ball-football"></i>Partidos</button>
+      <button class="tab"><i class="ti ti-history"></i>Historial</button>
       <button class="tab"><i class="ti ti-calendar"></i>Calendario</button>
       <button class="tab"><i class="ti ti-trophy"></i>Ranking</button>
       <button class="tab" id="tab-btn-admin"><i class="ti ti-shield-star"></i>Admin</button>
     </div>
     <div id="tab-matches" class="section active"></div>
+    <div id="tab-history" class="section"></div>
     <div id="tab-calendar" class="section"></div>
     <div id="tab-leaderboard" class="section"></div>
     <div id="tab-admin" class="section"></div>
@@ -426,6 +444,32 @@ function startAutoSync() {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── APUESTA CAMPEÓN ─────────────────────────────────────────────────────────
+const CHAMPION_DEADLINE = new Date("2026-06-20T03:59:00Z"); // Vie 19 Jun 23:59 Chile (UTC-4)
+const CHAMPION_PTS = 10;
+const COUNTRIES = [
+  {name:"Alemania",code:"de"},{name:"Arabia Saudita",code:"sa"},{name:"Argelia",code:"dz"},
+  {name:"Argentina",code:"ar"},{name:"Australia",code:"au"},{name:"Austria",code:"at"},
+  {name:"Bélgica",code:"be"},{name:"Bosnia y Herz.",code:"ba"},{name:"Brasil",code:"br"},
+  {name:"Cabo Verde",code:"cv"},{name:"Canadá",code:"ca"},{name:"Catar",code:"qa"},
+  {name:"Colombia",code:"co"},{name:"Corea del Sur",code:"kr"},{name:"Costa de Marfil",code:"ci"},
+  {name:"Croacia",code:"hr"},{name:"Curazao",code:"cw"},{name:"Ecuador",code:"ec"},
+  {name:"Egipto",code:"eg"},{name:"Escocia",code:"gb-sct"},{name:"España",code:"es"},
+  {name:"Estados Unidos",code:"us"},{name:"Francia",code:"fr"},{name:"Ghana",code:"gh"},
+  {name:"Haití",code:"ht"},{name:"Inglaterra",code:"gb-eng"},{name:"Irak",code:"iq"},
+  {name:"Irán",code:"ir"},{name:"Japón",code:"jp"},{name:"Jordania",code:"jo"},
+  {name:"Marruecos",code:"ma"},{name:"México",code:"mx"},
+  {name:"Noruega",code:"no"},{name:"Nueva Zelanda",code:"nz"},{name:"Países Bajos",code:"nl"},
+  {name:"Panamá",code:"pa"},{name:"Paraguay",code:"py"},{name:"Portugal",code:"pt"},
+  {name:"RD Congo",code:"cd"},{name:"Rep. Checa",code:"cz"},{name:"Senegal",code:"sn"},
+  {name:"Sudáfrica",code:"za"},{name:"Suecia",code:"se"},{name:"Suiza",code:"ch"},
+  {name:"Túnez",code:"tn"},{name:"Turquía",code:"tr"},{name:"Uruguay",code:"uy"},
+  {name:"Uzbekistán",code:"uz"},
+].sort((a,b)=>a.name.localeCompare(b.name));
+
+function isChampionLocked(){ return new Date() >= CHAMPION_DEADLINE; }
+// ─────────────────────────────────────────────────────────────────────────────
+
 // MATCHES con datetime real (hora Chile) y ordenados cronológicamente
 // dt: "YYYY-MM-DDTHH:MM" hora Chile
 const MATCHES = [
@@ -549,7 +593,7 @@ function isLocked(m){
   return new Date() >= lockTime;
 }
 
-let STATE = {users:[], preds:{}, results:{}, pins:{}, unlocked:[]};
+let STATE = {users:[], preds:{}, results:{}, pins:{}, unlocked:[], champion:{picks:{}, winner:null}};
 let CU = null;
 
 function showError(msg){
@@ -577,9 +621,10 @@ onSnapshot(REF, snap => {
   STATE.results  = d.results  || {};
   STATE.pins     = d.pins     || {};
   STATE.unlocked = d.unlocked || [];
+  STATE.champion = d.champion || {picks:{}, winner:null};
   showError("");
   renderChips();
-  if(CU){ renderMatches(); renderLeaderboard(); renderAdmin(); }
+  if(CU){ renderMatches(); renderHistory(); renderLeaderboard(); renderAdmin(); }
 }, err => showError("⚠️ Firebase: " + err.message));
 
 document.getElementById("name-input").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
@@ -631,7 +676,7 @@ async function loginAs(n, pin){
     // show admin tab only for Juan
     const adminBtn=document.getElementById("tab-btn-admin");
     if(adminBtn) adminBtn.style.display=n==="Juan"?"":"none";
-    renderMatches(); renderLeaderboard(); if(n==="Juan") renderAdmin();
+    renderMatches(); renderHistory(); renderLeaderboard(); if(n==="Juan") renderAdmin();
     // Arrancar sincronización automática de resultados
     startAutoSync();
   } catch(e){
@@ -668,19 +713,20 @@ document.querySelector(".logout-btn").addEventListener("click", () => {
 });
 
 document.querySelectorAll(".tab").forEach((tab, i) => {
-  const names = ["matches","calendar","leaderboard","admin"];
+  const names = ["matches","history","calendar","leaderboard","admin"];
   tab.addEventListener("click", () => showTab(names[i]));
 });
 
 function showTab(t){
   if(t==="admin"&&CU!=="Juan") return;
-  ["matches","calendar","leaderboard","admin"].forEach((x,i)=>{
+  ["matches","history","calendar","leaderboard","admin"].forEach((x,i)=>{
     document.getElementById("tab-"+x).classList.toggle("active", x===t);
     document.querySelectorAll(".tab")[i].classList.toggle("active", x===t);
   });
   if(t==="leaderboard") renderLeaderboard();
   if(t==="admin"&&CU==="Juan") renderAdmin();
   if(t==="calendar") renderCalendar();
+  if(t==="history") renderHistory();
 }
 
 function calcPts(p,r){
@@ -696,7 +742,69 @@ function renderMatches(){
   const res = STATE.results  || {};
   let lastDate="", html="";
 
-  MATCHES.forEach(m => {
+  // Card apuesta campeón
+  const locked = isChampionLocked();
+  const myPick = (STATE.champion?.picks||{})[CU];
+  const winner = STATE.champion?.winner || null;
+  const country = myPick ? COUNTRIES.find(c=>c.name===myPick) : null;
+  const wonChampion = winner && myPick === winner;
+
+  let champContent;
+  if(winner){
+    // Ya hay campeón definido
+    const wc = COUNTRIES.find(c=>c.name===winner);
+    champContent = `
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">🏆 Campeón: <span style="color:#FFD700">${winner}</span>${wc?` <img src="https://flagcdn.com/w40/${wc.code}.png" style="width:28px;height:19px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-left:4px">`:''}
+      </div>
+      ${myPick?`<div class="champion-picked">
+        ${country?`<img src="https://flagcdn.com/w40/${country.code}.png" alt="${myPick}">`:''}
+        <div><div class="champion-picked-name">Tu apuesta: ${myPick}</div>
+        <div class="champion-picked-pts">${wonChampion?'🎉 ¡Ganaste 10 puntos!':'❌ Esta vez no fue'}</div></div>
+      </div>`:`<div class="champion-locked">No ingresaste apuesta</div>`}`;
+  } else if(locked){
+    champContent = `
+      <div class="champion-locked">🔒 Apuesta cerrada — plazo vencido (19 Jun 23:59)</div>
+      ${myPick?`<div class="champion-picked" style="margin-top:8px">
+        ${country?`<img src="https://flagcdn.com/w40/${country.code}.png" alt="${myPick}">`:''}
+        <div><div class="champion-picked-name">${myPick}</div>
+        <div class="champion-picked-pts">Tu apuesta está guardada ✓</div></div>
+      </div>`:`<div style="margin-top:8px;font-size:12px;opacity:.7">No ingresaste apuesta</div>`}`;
+  } else if(myPick){
+    champContent = `
+      <div class="champion-picked">
+        ${country?`<img src="https://flagcdn.com/w40/${country.code}.png" alt="${myPick}">`:''}
+        <div><div class="champion-picked-name">${myPick}</div>
+        <div class="champion-picked-pts">Tu apuesta ✓ — puedes cambiarla hasta el 19 Jun 23:59</div></div>
+      </div>
+      <select class="champion-select" id="champ-select" style="margin-top:10px">
+        <option value="">— Cambiar selección —</option>
+        ${COUNTRIES.map(c=>`<option value="${c.name}"${c.name===myPick?' selected':''}>${c.name}</option>`).join('')}
+      </select>
+      <button class="champion-btn" id="champ-btn">Cambiar apuesta</button>`;
+  } else {
+    champContent = `
+      <select class="champion-select" id="champ-select">
+        <option value="">— Elige tu campeón —</option>
+        ${COUNTRIES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}
+      </select>
+      <button class="champion-btn" id="champ-btn">🏆 Apostar campeón (+10 pts)</button>`;
+  }
+
+  html += `<div class="champion-card">
+    <div class="champion-title">🏆 Apuesta al Campeón</div>
+    <div class="champion-sub">Cierra el viernes 19 Jun a las 23:59 · Vale 10 puntos</div>
+    ${champContent}
+  </div>`;
+
+  // Solo partidos NO finalizados
+  const pending = MATCHES.filter(m => res[m.id] === undefined);
+
+  if(!pending.length){
+    document.getElementById("tab-matches").innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">🏆 ¡Todos los partidos han finalizado!<br>Revisa el Historial para ver tus resultados.</div>`;
+    return;
+  }
+
+  pending.forEach(m => {
     // Use dt to get a clean date key for grouping
     const dtDate=m.dt.slice(0,10); // "2026-06-11"
     if(dtDate!==lastDate){
@@ -811,8 +919,26 @@ function renderMatches(){
   });
 
   document.getElementById("tab-matches").innerHTML = html;
-  // start countdown timers
   startCountdowns();
+
+  // Botón apuesta campeón
+  const champBtn = document.getElementById('champ-btn');
+  if(champBtn){
+    champBtn.addEventListener('click', async () => {
+      const sel = document.getElementById('champ-select');
+      if(!sel||!sel.value) return;
+      if(!STATE.champion) STATE.champion={picks:{},winner:null};
+      if(!STATE.champion.picks) STATE.champion.picks={};
+      STATE.champion.picks[CU] = sel.value;
+      champBtn.textContent='Guardando...'; champBtn.disabled=true;
+      try{
+        await saveState();
+        renderMatches();
+        renderLeaderboard();
+      }catch(e){ showError('⚠️ Error: '+e.message); }
+    });
+  }
+
   document.querySelectorAll(".save-btn[data-id]").forEach(btn =>
     btn.addEventListener("click", async () => {
       const id=btn.dataset.id;
@@ -834,6 +960,69 @@ function renderMatches(){
       } catch(e){ showError("⚠️ Error al guardar: "+e.message); }
     })
   );
+}
+
+function renderHistory(){
+  const my = STATE.preds[CU] || {};
+  const res = STATE.results  || {};
+  const finished = MATCHES.filter(m => res[m.id] !== undefined).reverse();
+
+  if(!finished.length){
+    document.getElementById("tab-history").innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">⏳ Aún no hay partidos finalizados.</div>`;
+    return;
+  }
+
+  let html=`<div style="font-size:13px;color:#888;margin-bottom:12px;font-weight:600">📋 ${finished.length} partido${finished.length!==1?'s':''} finalizado${finished.length!==1?'s':''}</div>`;
+
+  finished.forEach(m => {
+    const r = res[m.id];
+    const p = my[m.id];
+    const pts = p ? calcPts(p, r) : -1;
+    const ptsBadge = pts===3?`<span class="pts-badge pts3">⭐ +3</span>`
+                   : pts===1?`<span class="pts-badge pts1">✓ +1</span>`
+                   : pts===0?`<span class="pts-badge pts0">✗ 0</span>`
+                   : `<span class="pts-badge pts0" style="color:#ccc">sin pron.</span>`;
+
+    // Todos los pronósticos
+    const users = STATE.users || [];
+    const predItems = users.map(u => {
+      const up = (STATE.preds[u]||{})[m.id];
+      const g = up ? calcPts(up, r) : -1;
+      const cls = g===3?'pts3':g===1?'pts1':g===0?'pts0':'nopred';
+      const medal = g===3?'⭐':g===1?'✓':g===0?'✗':'—';
+      return`<div class="pred-item ${cls}">
+        <span class="pred-item-name">${u===CU?'👤 '+u:u}</span>
+        <span class="pred-item-score">${up?`${up.h}–${up.a}`:'sin pron.'} ${medal}</span>
+      </div>`;
+    }).join('');
+
+    html+=`<div class="match-card ${m.mc}">
+      <div class="match-head">
+        <span class="match-date">${m.date}</span>
+        <span class="badge badge-done">✓ Finalizado</span>
+      </div>
+      <div class="teams">
+        <div class="team">${FLAG(m.hc)}<div class="team-name">${m.home}</div></div>
+        <div class="vs-block">
+          <div class="real-score-row"><span class="rscore">${r.h}</span><span class="rdash">–</span><span class="rscore">${r.a}</span></div>
+        </div>
+        <div class="team">${FLAG(m.ac)}<div class="team-name">${m.away}</div></div>
+      </div>
+      <div class="pred-row">
+        <span class="pred-note">${p?`Mi pronóstico: ${p.h}–${p.a}`:'Sin pronóstico'}</span>
+        ${ptsBadge}
+      </div>
+      <div class="all-preds">
+        <div class="all-preds-title" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.querySelector('.chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
+          <span>👥 Pronósticos del grupo (${users.length})</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="pred-list" style="display:none">${predItems}</div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById("tab-history").innerHTML = html;
 }
 
 let _cdInterval=null;
@@ -888,6 +1077,10 @@ function calcUserStats(user){
     if(g===3) ex++; else if(g===1) win++;
     if(g>=0) pts+=g;
   });
+  // Puntos apuesta campeón
+  const winner = STATE.champion?.winner || null;
+  const myPick = (STATE.champion?.picks||{})[user];
+  if(winner && myPick === winner) pts += CHAMPION_PTS;
   return{pts,ex,win,played};
 }
 
@@ -919,6 +1112,30 @@ function renderAdmin(){
     </div>
     <div style="font-size:12px;color:#888">${STATE.lastSync ? '✓ Último sync: ' + new Date(STATE.lastSync).toLocaleString('es-CL') : '⏳ Sin sincronizar aún'}</div>
     <div style="font-size:11px;color:#aaa;margin-top:4px">Se sincroniza automáticamente cada 5 minutos mientras alguien tenga la app abierta.</div>
+  </div>
+  <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🏆 Apuesta al Campeón</div>
+    <div style="font-size:12px;color:#888;margin-bottom:10px">Apuestas registradas: ${Object.keys(STATE.champion?.picks||{}).length} / ${(STATE.users||[]).length}</div>
+    ${(STATE.users||[]).map(u=>{
+      const pick=(STATE.champion?.picks||{})[u];
+      const won=STATE.champion?.winner&&pick===STATE.champion?.winner;
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:.5px solid #f0f0ea;font-size:13px">
+        <span style="font-weight:600">${u}</span>
+        <span style="color:${pick?'#003DA5':'#aaa'}">${pick||'sin apuesta'}${won?' 🏆':''}</span>
+      </div>`;
+    }).join('')}
+    <div style="margin-top:12px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:#555">Definir campeón oficial:</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="admin-winner-select" style="flex:1;padding:8px;font-size:13px;border:1.5px solid #d0d0c8;border-radius:8px;background:#fafaf8">
+          <option value="">— Seleccionar campeón —</option>
+          ${COUNTRIES.map(c=>`<option value="${c.name}"${STATE.champion?.winner===c.name?' selected':''}>${c.name}</option>`).join('')}
+        </select>
+        <button onclick="adminSetWinner()" style="padding:8px 14px;font-size:13px;font-weight:700;background:var(--wc-blue);color:#fff;border:none;border-radius:8px;cursor:pointer">Guardar</button>
+        ${STATE.champion?.winner?`<button onclick="adminClearWinner()" style="padding:8px 14px;font-size:13px;font-weight:700;background:#FCEBEB;color:var(--wc-red);border:none;border-radius:8px;cursor:pointer">Borrar</button>`:''}
+      </div>
+      ${STATE.champion?.winner?`<div style="margin-top:8px;font-size:12px;color:var(--wc-green);font-weight:700">✓ Campeón actual: ${STATE.champion.winner}</div>`:''}
+    </div>
   </div>
   <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
     <div style="font-size:13px;font-weight:700;margin-bottom:10px">👥 Usuarios registrados</div>
@@ -1047,6 +1264,23 @@ async function adminSyncNow(){
     if(btn){ btn.textContent='⚠️ Error'; btn.disabled=false; }
   }
   setTimeout(()=>{ if(btn) btn.textContent='⚡ Sincronizar ahora'; }, 2000);
+}
+
+async function adminSetWinner(){
+  const sel = document.getElementById('admin-winner-select');
+  if(!sel||!sel.value) return;
+  if(!STATE.champion) STATE.champion={picks:{},winner:null};
+  STATE.champion.winner = sel.value;
+  await saveState();
+  renderAdmin(); renderLeaderboard(); renderMatches();
+}
+
+async function adminClearWinner(){
+  if(!confirm('¿Borrar el campeón definido?')) return;
+  if(!STATE.champion) STATE.champion={picks:{},winner:null};
+  STATE.champion.winner = null;
+  await saveState();
+  renderAdmin(); renderLeaderboard(); renderMatches();
 }
 
 function adminToggleUnlock(user){
@@ -1245,6 +1479,8 @@ window.adminDeleteUser=adminDeleteUser;
 window.adminResetPin=adminResetPin;
 window.adminToggleUnlock=adminToggleUnlock;
 window.adminSyncNow=adminSyncNow;
+window.adminSetWinner=adminSetWinner;
+window.adminClearWinner=adminClearWinner;
 window.pinDel=pinDel;
 window.closePinModal=closePinModal;
 window.showCalMatch=showCalMatch;
