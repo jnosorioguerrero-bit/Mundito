@@ -664,6 +664,7 @@ async function loginAs(n, pin){
       STATE.results  = d.results  || {};
       STATE.pins     = d.pins     || {};
       STATE.unlocked = d.unlocked || [];
+      STATE.champion = d.champion || {picks:{}, winner:null};
     }
     if(!STATE.users.includes(n)) STATE.users.push(n);
     if(!STATE.preds[n]) STATE.preds[n] = {};
