@@ -291,7 +291,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB5s7sXqgONnTYyxFOiedyqgcAKNxSy6Eo",
@@ -614,6 +614,18 @@ async function saveState(){
   await setDoc(REF, JSON.parse(JSON.stringify(STATE)));
 }
 
+// Guarda solo el pick de campeón de un usuario puntual usando updateDoc
+// con path granular, para no pisar el resto del documento (evita race conditions
+// con el auto-sync de resultados u otros usuarios guardando al mismo tiempo).
+async function saveChampionPick(user, country){
+  try{
+    await updateDoc(REF, { [`champion.picks.${user}`]: country });
+  }catch(e){
+    // Fallback por si el documento aún no tiene el campo "champion" (poco probable, pero por si acaso)
+    await setDoc(REF, { champion: { picks: { [user]: country } } }, { merge: true });
+  }
+}
+
 onSnapshot(REF, snap => {
   const d = snap.exists() ? snap.data() : {};
   STATE.users    = (d.users || []).filter(u=>u!==null&&u!=="null"&&u!==undefined);
@@ -933,7 +945,7 @@ function renderMatches(){
       STATE.champion.picks[CU] = sel.value;
       champBtn.textContent='Guardando...'; champBtn.disabled=true;
       try{
-        await saveState();
+        await saveChampionPick(CU, sel.value);
         renderMatches();
         renderLeaderboard();
       }catch(e){ showError('⚠️ Error: '+e.message); }
@@ -1272,7 +1284,11 @@ async function adminSetWinner(){
   if(!sel||!sel.value) return;
   if(!STATE.champion) STATE.champion={picks:{},winner:null};
   STATE.champion.winner = sel.value;
-  await saveState();
+  try{
+    await updateDoc(REF, { 'champion.winner': sel.value });
+  }catch(e){
+    await setDoc(REF, { champion: { winner: sel.value } }, { merge: true });
+  }
   renderAdmin(); renderLeaderboard(); renderMatches();
 }
 
@@ -1280,7 +1296,11 @@ async function adminClearWinner(){
   if(!confirm('¿Borrar el campeón definido?')) return;
   if(!STATE.champion) STATE.champion={picks:{},winner:null};
   STATE.champion.winner = null;
-  await saveState();
+  try{
+    await updateDoc(REF, { 'champion.winner': null });
+  }catch(e){
+    await setDoc(REF, { champion: { winner: null } }, { merge: true });
+  }
   renderAdmin(); renderLeaderboard(); renderMatches();
 }
 
