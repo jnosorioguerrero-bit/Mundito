@@ -878,24 +878,25 @@ function renderMatches(){
       predRow=`<div class="pred-row"><span class="pred-note">Mi pronóstico: ${p.h}–${p.a}</span>${pb}</div>`;
     }
 
-    // All predictions (only shown when match is done)
+    // All predictions (shown when locked or done)
     let allPredsRow="";
-    if(done){
+    if(done || locked){
       const users=STATE.users||[];
       const items=users.map(u=>{
         const up=(STATE.preds[u]||{})[m.id];
-        const pts=up?calcPts(up,r):-1;
-        const cls=pts===3?'pts3':pts===1?'pts1':pts===0?'pts0':'nopred';
-        const medal=pts===3?'⭐':pts===1?'✓':pts===0?'✗':'—';
-        const scoreStr=up?`${up.h}–${up.a}`:'sin pron.';
+        const pts=done&&up?calcPts(up,r):-1;
+        const cls=done?(pts===3?'pts3':pts===1?'pts1':pts===0?'pts0':'nopred'):'nopred';
+        const medal=done?(pts===3?'⭐':pts===1?'✓':pts===0?'✗':'—'):'';
+        const scoreStr=up?`${up.h}\u2013${up.a}`:'sin pron.';
         return`<div class="pred-item ${cls}">
           <span class="pred-item-name">${u===CU?'👤 '+u:u}</span>
           <span class="pred-item-score">${scoreStr} ${medal}</span>
         </div>`;
       }).join('');
+      const titulo=done?`👥 Pronósticos del grupo (${users.length})`:`🔒 Pronósticos cerrados (${users.length})`;
       allPredsRow=`<div class="all-preds">
         <div class="all-preds-title" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.querySelector('.chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
-          <span>👥 Pronósticos del grupo (${users.length})</span>
+          <span>${titulo}</span>
           <span class="chevron">▼</span>
         </div>
         <div class="pred-list" style="display:none">${items}</div>
