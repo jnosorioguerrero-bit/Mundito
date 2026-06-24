@@ -408,17 +408,24 @@ async function fetchAndSyncResults() {
       const hScore = fm.score.fullTime.home;
       const aScore = fm.score.fullTime.away;
 
-      // Buscar el partido en MATCHES por nombres de equipos
-      const local = MATCHES.find(m =>
-        m.home === hName && m.away === aName
-      );
+      // Buscar el partido en MATCHES por nombres de equipos (normal o invertido)
+      let local = MATCHES.find(m => m.home === hName && m.away === aName);
+      let invertido = false;
+      if (!local) {
+        local = MATCHES.find(m => m.home === aName && m.away === hName);
+        invertido = true;
+      }
       if (!local) continue;
+
+      // Si la API tiene los equipos al revés respecto a MATCHES, invertir el score
+      const rH = invertido ? aScore : hScore;
+      const rA = invertido ? hScore : aScore;
 
       // Solo actualizar si no existe o el score cambió
       const existing = STATE.results[local.id];
-      if (!existing || existing.h !== hScore || existing.a !== aScore) {
+      if (!existing || existing.h !== rH || existing.a !== rA) {
         if (!STATE.results) STATE.results = {};
-        STATE.results[local.id] = { h: hScore, a: aScore };
+        STATE.results[local.id] = { h: rH, a: rA };
         updated = true;
       }
     }
