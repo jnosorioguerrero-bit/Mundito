@@ -90,7 +90,7 @@ QUINIELA_RAW = [
     ("Inglaterra","Ghana","l3"), ("Panamá","Croacia","l4"),
     ("Sudáfrica","Corea del Sur","a5"), ("México","Rep. Checa","a6"),
     ("Bosnia y Herz.","Catar","b6"), ("Suiza","Canadá","b5"),
-    ("Marruecos","Haití","c5"), ("Brasil","Escocia","c6"),
+    ("Marruecos","Haití","c6"), ("Brasil","Escocia","c5"),
     ("Paraguay","Australia","d5"), ("Turquía","Estados Unidos","d6"),
     ("Curazao","Costa de Marfil","e5"), ("Ecuador","Alemania","e6"),
     ("Japón","Suecia","f5"), ("Túnez","Países Bajos","f6"),
