@@ -94,10 +94,12 @@ QUINIELA_RAW = [
     ("Paraguay","Australia","d5"), ("Turquía","Estados Unidos","d6"),
     ("Curazao","Costa de Marfil","e5"), ("Ecuador","Alemania","e6"),
     ("Japón","Suecia","f5"), ("Túnez","Países Bajos","f6"),
-    ("Egipto","Nueva Zelanda","g5"), ("Irán","Bélgica","g6"),
+    ("Egipto","Irán","g5"), ("Nueva Zelanda","Bélgica","g6"),
     ("Panamá","Inglaterra","l5"), ("Ghana","Croacia","l6"),
-    ("Colombia","Portugal","k5"), ("Uzbekistán","RD Congo","k6"),
-    ("Jordania","Argentina","j5"), ("Austria","Argelia","j6"),
+    ("Colombia","Portugal","k5"), ("RD Congo","Uzbekistán","k6"),
+    ("Jordania","Argentina","j5"), ("Austria","Argelia","j6"), 
+    ("Noruega","Francia","i5"), ("Senegal","Irak","i6"),
+    ("Uruguay","España","h5"), ("Cabo Verde","Arabia Saudita","h6"),
 ]
 
 for h, a, mid in QUINIELA_RAW:
