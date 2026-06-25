@@ -89,17 +89,17 @@ QUINIELA_RAW = [
     ("Portugal","Uzbekistán","k3"), ("Colombia","RD Congo","k4"),
     ("Inglaterra","Ghana","l3"), ("Panamá","Croacia","l4"),
     ("Sudáfrica","Corea del Sur","a5"), ("México","Rep. Checa","a6"),
-    ("Bosnia y Herz.","Catar","b6"), ("Suiza","Canadá","b5"),
-    ("Marruecos","Haití","c6"), ("Brasil","Escocia","c5"),
+    ("Suiza","Canadá","b5"), ("Bosnia y Herz.","Catar","b6"),
+    ("Brasil","Escocia","c5"), ("Marruecos","Haití","c6"),
     ("Paraguay","Australia","d5"), ("Turquía","Estados Unidos","d6"),
     ("Curazao","Costa de Marfil","e5"), ("Ecuador","Alemania","e6"),
     ("Japón","Suecia","f5"), ("Túnez","Países Bajos","f6"),
     ("Egipto","Irán","g5"), ("Nueva Zelanda","Bélgica","g6"),
-    ("Panamá","Inglaterra","l5"), ("Ghana","Croacia","l6"),
-    ("Colombia","Portugal","k5"), ("RD Congo","Uzbekistán","k6"),
-    ("Jordania","Argentina","j5"), ("Austria","Argelia","j6"), 
     ("Noruega","Francia","i5"), ("Senegal","Irak","i6"),
     ("Uruguay","España","h5"), ("Cabo Verde","Arabia Saudita","h6"),
+    ("Panamá","Inglaterra","l5"), ("Croacia","Ghana","l6"),
+    ("Colombia","Portugal","k5"), ("RD Congo","Uzbekistán","k6"),
+    ("Jordania","Argentina","j5"), ("Argelia","Austria","j6"),
 ]
 
 for h, a, mid in QUINIELA_RAW:
