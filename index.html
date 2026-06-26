@@ -1374,112 +1374,82 @@ function renderStats(){
 
 // ─── Admin: Asignar clasificados a Eliminatoria de 32 ──────────────────────
 function renderAdminSlots(){
-  const slotRows = `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">28 Jun 21:00</span>
-        <span style="font-weight:700;font-size:12px">Sudáfrica</span>
-        <span style="color:#aaa">vs</span>
-        <span style="font-weight:700;font-size:12px">Canadá</span>
-        <span style="color:#aaa;font-size:10px">[m1]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">29 Jun 13:00</span>
-        <select class="slot-select" data-mid="m2" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° C --</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m2" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° F --</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option></select>
-        <span style="color:#aaa;font-size:10px">[m2]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">29 Jun 21:30</span>
-        <span style="font-weight:700;font-size:12px">Alemania</span>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m3" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° ABCDF --</option><option value="México" data-code="mx">México</option><option value="Sudáfrica" data-code="za">Sudáfrica</option><option value="Corea del Sur" data-code="kr">Corea del Sur</option><option value="Rep. Checa" data-code="cz">Rep. Checa</option><option value="Canadá" data-code="ca">Canadá</option><option value="Bosnia y Herz." data-code="ba">Bosnia y Herz.</option><option value="Catar" data-code="qa">Catar</option><option value="Suiza" data-code="ch">Suiza</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option><option value="Estados Unidos" data-code="us">Estados Unidos</option><option value="Paraguay" data-code="py">Paraguay</option><option value="Australia" data-code="au">Australia</option><option value="Turquía" data-code="tr">Turquía</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option></select>
-        <span style="color:#aaa;font-size:10px">[m3]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">30 Jun 02:00</span>
-        <select class="slot-select" data-mid="m4" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° F --</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option></select>
-        <span style="color:#aaa">vs</span>
-        <span style="font-weight:700;font-size:12px">Marruecos</span>
-        <span style="color:#aaa;font-size:10px">[m4]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">30 Jun 18:00</span>
-        <select class="slot-select" data-mid="m5" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° E --</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m5" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° I --</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
-        <span style="color:#aaa;font-size:10px">[m5]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">30 Jun 22:00</span>
-        <select class="slot-select" data-mid="m6" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° I --</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m6" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° CDFGH --</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option><option value="Estados Unidos" data-code="us">Estados Unidos</option><option value="Paraguay" data-code="py">Paraguay</option><option value="Australia" data-code="au">Australia</option><option value="Turquía" data-code="tr">Turquía</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option><option value="Bélgica" data-code="be">Bélgica</option><option value="Egipto" data-code="eg">Egipto</option><option value="Irán" data-code="ir">Irán</option><option value="Nueva Zelanda" data-code="nz">Nueva Zelanda</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option></select>
-        <span style="color:#aaa;font-size:10px">[m6]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">1 Jul 02:00</span>
-        <span style="font-weight:700;font-size:12px">México</span>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m7" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° CEFHI --</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
-        <span style="color:#aaa;font-size:10px">[m7]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">1 Jul 17:00</span>
-        <select class="slot-select" data-mid="m8" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° L --</option><option value="Inglaterra" data-code="gb-eng">Inglaterra</option><option value="Croacia" data-code="hr">Croacia</option><option value="Ghana" data-code="gh">Ghana</option><option value="Panamá" data-code="pa">Panamá</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m8" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° EHIJK --</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option><option value="Portugal" data-code="pt">Portugal</option><option value="RD Congo" data-code="cd">RD Congo</option><option value="Uzbekistán" data-code="uz">Uzbekistán</option><option value="Colombia" data-code="co">Colombia</option></select>
-        <span style="color:#aaa;font-size:10px">[m8]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">1 Jul 21:00</span>
-        <select class="slot-select" data-mid="m9" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° G --</option><option value="Bélgica" data-code="be">Bélgica</option><option value="Egipto" data-code="eg">Egipto</option><option value="Irán" data-code="ir">Irán</option><option value="Nueva Zelanda" data-code="nz">Nueva Zelanda</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m9" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° AEHIJ --</option><option value="México" data-code="mx">México</option><option value="Sudáfrica" data-code="za">Sudáfrica</option><option value="Corea del Sur" data-code="kr">Corea del Sur</option><option value="Rep. Checa" data-code="cz">Rep. Checa</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
-        <span style="color:#aaa;font-size:10px">[m9]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">2 Jul 01:00</span>
-        <span style="font-weight:700;font-size:12px">Estados Unidos</span>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m10" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° BEFIJ --</option><option value="Canadá" data-code="ca">Canadá</option><option value="Bosnia y Herz." data-code="ba">Bosnia y Herz.</option><option value="Catar" data-code="qa">Catar</option><option value="Suiza" data-code="ch">Suiza</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
-        <span style="color:#aaa;font-size:10px">[m10]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">2 Jul 13:00</span>
-        <span style="font-weight:700;font-size:12px">Brasil</span>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m11" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° D --</option><option value="Estados Unidos" data-code="us">Estados Unidos</option><option value="Paraguay" data-code="py">Paraguay</option><option value="Australia" data-code="au">Australia</option><option value="Turquía" data-code="tr">Turquía</option></select>
-        <span style="color:#aaa;font-size:10px">[m11]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">2 Jul 21:00</span>
-        <select class="slot-select" data-mid="m12" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° J --</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m12" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° I --</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
-        <span style="color:#aaa;font-size:10px">[m12]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">3 Jul 13:00</span>
-        <select class="slot-select" data-mid="m13" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° K --</option><option value="Portugal" data-code="pt">Portugal</option><option value="RD Congo" data-code="cd">RD Congo</option><option value="Uzbekistán" data-code="uz">Uzbekistán</option><option value="Colombia" data-code="co">Colombia</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m13" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° L --</option><option value="Inglaterra" data-code="gb-eng">Inglaterra</option><option value="Croacia" data-code="hr">Croacia</option><option value="Ghana" data-code="gh">Ghana</option><option value="Panamá" data-code="pa">Panamá</option></select>
-        <span style="color:#aaa;font-size:10px">[m13]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">3 Jul 21:00</span>
-        <select class="slot-select" data-mid="m14" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° B --</option><option value="Canadá" data-code="ca">Canadá</option><option value="Bosnia y Herz." data-code="ba">Bosnia y Herz.</option><option value="Catar" data-code="qa">Catar</option><option value="Suiza" data-code="ch">Suiza</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m14" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° A --</option><option value="México" data-code="mx">México</option><option value="Sudáfrica" data-code="za">Sudáfrica</option><option value="Corea del Sur" data-code="kr">Corea del Sur</option><option value="Rep. Checa" data-code="cz">Rep. Checa</option></select>
-        <span style="color:#aaa;font-size:10px">[m14]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">4 Jul 13:00</span>
-        <select class="slot-select" data-mid="m15" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° H --</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m15" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° G --</option><option value="Bélgica" data-code="be">Bélgica</option><option value="Egipto" data-code="eg">Egipto</option><option value="Irán" data-code="ir">Irán</option><option value="Nueva Zelanda" data-code="nz">Nueva Zelanda</option></select>
-        <span style="color:#aaa;font-size:10px">[m15]</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
-        <span style="color:#aaa;min-width:40px">4 Jul 21:00</span>
-        <select class="slot-select" data-mid="m16" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° E --</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option></select>
-        <span style="color:#aaa">vs</span>
-        <select class="slot-select" data-mid="m16" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° J --</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
-        <span style="color:#aaa;font-size:10px">[m16]</span>
-      </div>`;
+  // Mapeo de equipos por grupo
+  const GRUPOS_EQUIPOS = {
+    "A":[{name:"México",code:"mx"},{name:"Sudáfrica",code:"za"},{name:"Corea del Sur",code:"kr"},{name:"Rep. Checa",code:"cz"}],
+    "B":[{name:"Canadá",code:"ca"},{name:"Bosnia y Herz.",code:"ba"},{name:"Catar",code:"qa"},{name:"Suiza",code:"ch"}],
+    "C":[{name:"Brasil",code:"br"},{name:"Marruecos",code:"ma"},{name:"Haití",code:"ht"},{name:"Escocia",code:"gb-sct"}],
+    "D":[{name:"Estados Unidos",code:"us"},{name:"Paraguay",code:"py"},{name:"Australia",code:"au"},{name:"Turquía",code:"tr"}],
+    "E":[{name:"Alemania",code:"de"},{name:"Curazao",code:"cw"},{name:"Costa de Marfil",code:"ci"},{name:"Ecuador",code:"ec"}],
+    "F":[{name:"Países Bajos",code:"nl"},{name:"Japón",code:"jp"},{name:"Suecia",code:"se"},{name:"Túnez",code:"tn"}],
+    "G":[{name:"Bélgica",code:"be"},{name:"Egipto",code:"eg"},{name:"Irán",code:"ir"},{name:"Nueva Zelanda",code:"nz"}],
+    "H":[{name:"España",code:"es"},{name:"Cabo Verde",code:"cv"},{name:"Arabia Saudita",code:"sa"},{name:"Uruguay",code:"uy"}],
+    "I":[{name:"Francia",code:"fr"},{name:"Senegal",code:"sn"},{name:"Irak",code:"iq"},{name:"Noruega",code:"no"}],
+    "J":[{name:"Argentina",code:"ar"},{name:"Argelia",code:"dz"},{name:"Austria",code:"at"},{name:"Jordania",code:"jo"}],
+    "K":[{name:"Portugal",code:"pt"},{name:"RD Congo",code:"cd"},{name:"Uzbekistán",code:"uz"},{name:"Colombia",code:"co"}],
+    "L":[{name:"Inglaterra",code:"gb-eng"},{name:"Croacia",code:"hr"},{name:"Ghana",code:"gh"},{name:"Panamá",code:"pa"}]
+  };
   
-  const html = `<div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:14px 15px;margin-bottom:14px">
+  // Filtrar solo partidos de Eliminatoria de 32
+  const r32 = MATCHES.filter(m => m.group === "Eliminatoria de 32");
+  
+  // Función para construir opciones de un slot
+  function buildOptions(label, current){
+    // Parsear el label para extraer grupos: "1° A" -> ["A"], "3° ABCDF" -> ["A","B","C","D","F"]
+    let grupos = [];
+    const match = label.match(/^[123]°\s*([A-Z]+)/);
+    if(match){
+      grupos = match[1].split('');
+    }
+    const seen = new Set();
+    let opts = `<option value="">-- ${label} --</option>`;
+    grupos.forEach(g => {
+      (GRUPOS_EQUIPOS[g] || []).forEach(t => {
+        if(!seen.has(t.name)){
+          seen.add(t.name);
+          const sel = t.name === current ? ' selected' : '';
+          opts += `<option value="${t.name}" data-code="${t.code}"${sel}>${t.name}</option>`;
+        }
+      });
+    });
+    return opts;
+  }
+  
+  // Aplicar matchSlots guardados
+  const savedSlots = STATE.matchSlots || {};
+  
+  let slotRows = '';
+  r32.forEach(m => {
+    // Para cada lado, determinar si necesita selector o texto fijo
+    const renderSide = (label, code, mid, side) => {
+      const isSlot = /^[123]°/.test(label);
+      const saved = savedSlots[mid]?.[side];
+      if(isSlot){
+        return `<select class="slot-select" data-mid="${mid}" data-side="${side}" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:140px">${buildOptions(label, saved)}</select>`;
+      }
+      // Texto fijo con bandera si tiene código
+      const flag = code ? `<img src="https://flagcdn.com/w20/${code}.png" style="width:18px;height:13px;object-fit:cover;border-radius:2px;vertical-align:middle;margin-right:4px">` : '';
+      return `<span style="font-weight:700;font-size:12px">${flag}${label}</span>`;
+    };
+    
+    const homeHTML = renderSide(m.home, m.hc, m.id, 'home');
+    const awayHTML = renderSide(m.away, m.ac, m.id, 'away');
+    
+    slotRows += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px;flex-wrap:wrap">
+      <span style="color:#aaa;min-width:60px">${m.date}</span>
+      ${homeHTML}
+      <span style="color:#aaa">vs</span>
+      ${awayHTML}
+      <span style="color:#aaa;font-size:10px">[${m.id}]</span>
+    </div>`;
+  });
+  
+  return `<div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:14px 15px;margin-bottom:14px">
     <div style="font-size:13px;font-weight:700;margin-bottom:10px">🏆 Asignar clasificados — Eliminatoria de 32</div>
     <div style="font-size:11px;color:#888;margin-bottom:10px">Selecciona el equipo clasificado para cada slot. Se guardará en Firebase automáticamente.</div>
     ${slotRows}
     <button onclick="saveSlots()" style="margin-top:12px;padding:8px 20px;background:var(--wc-blue);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">💾 Guardar clasificados</button>
   </div>`;
-  
-  return html;
 }
 
 function loadSavedSlots(){
