@@ -1168,10 +1168,9 @@ function computeStandings(group){
 }
 
 function renderGroups(){
-  const groups = [...new Set(MATCHES.map(m=>m.group))]; // respeta orden de aparición (A, B, C...)
-  const slotsHTML = renderAdminSlots();
-  let html = `${slotsHTML}
-    <div class="admin-info">📊 Posiciones calculadas con los resultados sincronizados.</div>`;
+  // Solo grupos de fase de grupos (A-L), no eliminatoria
+  const groups = [...new Set(MATCHES.filter(m=>m.group&&m.group.startsWith("Grupo")).map(m=>m.group))];
+  let html = `<div class="admin-info">📊 Posiciones calculadas con los resultados sincronizados.</div>`;
 
   groups.forEach(g=>{
     const standings = computeStandings(g);
@@ -1570,7 +1569,8 @@ function renderLeaderboard(){
 
 function renderAdmin(){
   const res=STATE.results||{};
-  let html=`<div class="admin-info">🛡️ Ingresa los resultados reales y gestiona usuarios.</div>
+  const slotsHTML = renderAdminSlots();
+  let html=`${slotsHTML}<div class="admin-info">🛡️ Ingresa los resultados reales y gestiona usuarios.</div>
   <div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:13px 15px;margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div style="font-size:13px;font-weight:700">🔄 Auto-sync resultados</div>
