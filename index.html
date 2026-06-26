@@ -675,6 +675,7 @@ onSnapshot(REF, snap => {
   STATE.unlocked = d.unlocked || [];
   STATE.champion = d.champion || {picks:{}, winner:null};
   STATE.matchSlots = d.matchSlots || {};
+  STATE.knockoutWinners = d.knockoutWinners || {};
   // Aplicar matchSlots a MATCHES en memoria para que se vean los equipos asignados
   Object.entries(STATE.matchSlots).forEach(([mid, data]) => {
     const m = MATCHES.find(x => x.id === mid);
@@ -1617,6 +1618,24 @@ function renderAdmin(){
     doneMatches.forEach(m=>{
       const r=res[m.id];
       const rl=`<span style="color:var(--wc-green);font-weight:700">${r.h}–${r.a}</span>`;
+      const isKnockout = m.group && !m.group.startsWith("Grupo");
+      const winners = STATE.knockoutWinners || {};
+      const savedWinner = winners[m.id];
+      let winnerLabel = '';
+      if(isKnockout){
+        if(savedWinner === 'home') winnerLabel = `<div style="font-size:11px;color:var(--wc-green);margin-top:4px">🏆 Avanza: ${m.home}</div>`;
+        else if(savedWinner === 'away') winnerLabel = `<div style="font-size:11px;color:var(--wc-green);margin-top:4px">🏆 Avanza: ${m.away}</div>`;
+        else winnerLabel = `<div style="font-size:11px;color:#E67E22;margin-top:4px">⚠️ Falta indicar ganador</div>`;
+      }
+      const winnerSelect = isKnockout ? `
+        <div class="admin-row" style="margin-top:6px">
+          <label style="font-size:11px;color:#888">🏆 Ganador:</label>
+          <select id="kw_${m.id}" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #ccc">
+            <option value="">— Seleccionar —</option>
+            <option value="home"${savedWinner==='home'?' selected':''}>${m.home}</option>
+            <option value="away"${savedWinner==='away'?' selected':''}>${m.away}</option>
+          </select>
+        </div>` : '';
       html+=`<div class="admin-card" style="opacity:0.7">
         <div class="admin-card-top">
           <div class="admin-teams">${AFLAG(m.hc)} ${m.home} <span style="color:#ccc;font-weight:400">vs</span> ${m.away} ${AFLAG(m.ac)}</div>
@@ -1631,6 +1650,8 @@ function renderAdmin(){
           <button class="set-btn" data-id="${m.id}">Actualizar</button>
           <button class="del-btn" data-id="${m.id}">Borrar</button>
         </div>
+        ${winnerSelect}
+        ${winnerLabel}
       </div>`;
     });
     html+=`</div></div>`;
@@ -1640,6 +1661,19 @@ function renderAdmin(){
   pendingMatches.forEach(m=>{
     const r=res[m.id];
     const rl=`<span style="color:#bbb">Sin resultado</span>`;
+    // Si es partido de eliminatoria, agregar selector de ganador
+    const isKnockout = m.group && !m.group.startsWith("Grupo");
+    const winners = STATE.knockoutWinners || {};
+    const savedWinner = winners[m.id];
+    const winnerSelect = isKnockout ? `
+      <div class="admin-row" style="margin-top:6px">
+        <label style="font-size:11px;color:#888">🏆 Ganador (avanza):</label>
+        <select id="kw_${m.id}" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #ccc">
+          <option value="">— Seleccionar —</option>
+          <option value="home"${savedWinner==='home'?' selected':''}>${m.home}</option>
+          <option value="away"${savedWinner==='away'?' selected':''}>${m.away}</option>
+        </select>
+      </div>` : '';
     html+=`<div class="admin-card">
       <div class="admin-card-top">
         <div class="admin-teams">${AFLAG(m.hc)} ${m.home} <span style="color:#ccc;font-weight:400">vs</span> ${m.away} ${AFLAG(m.ac)}</div>
@@ -1653,6 +1687,7 @@ function renderAdmin(){
         <input class="ainput" id="ra_${m.id}" type="number" min="0" max="20" value="" placeholder="0">
         <button class="set-btn" data-id="${m.id}">Guardar</button>
       </div>
+      ${winnerSelect}
     </div>`;
   });
   document.getElementById("tab-admin").innerHTML = html;
@@ -1665,7 +1700,19 @@ function renderAdmin(){
       if(h===""||a==="") return;
       if(!STATE.results) STATE.results={};
       STATE.results[id]={h:parseInt(h),a:parseInt(a)};
-      try{ await saveState(); renderAdmin(); renderMatches(); renderLeaderboard(); }catch(e){ showError("⚠️ Error: "+e.message); }
+      // Guardar ganador de eliminatoria si está seleccionado
+      const winnerSel = document.getElementById('kw_'+id);
+      if(winnerSel && winnerSel.value){
+        if(!STATE.knockoutWinners) STATE.knockoutWinners={};
+        STATE.knockoutWinners[id] = winnerSel.value;
+      }
+      try{ 
+        await updateDoc(REF, {[`results.${id}`]:{h:parseInt(h),a:parseInt(a)}});
+        if(winnerSel && winnerSel.value){
+          await updateDoc(REF, {[`knockoutWinners.${id}`]: winnerSel.value});
+        }
+        renderAdmin(); renderMatches(); renderLeaderboard(); 
+      }catch(e){ showError("⚠️ Error: "+e.message); }
     })
   );
   document.querySelectorAll(".del-btn[data-id]").forEach(btn =>
