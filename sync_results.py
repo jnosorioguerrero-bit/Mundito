@@ -96,9 +96,9 @@ QUINIELA_RAW = [
     ("Japón","Suecia","f5"), ("Túnez","Países Bajos","f6"),
     ("Egipto","Irán","g5"), ("Nueva Zelanda","Bélgica","g6"),
     ("Noruega","Francia","i5"), ("Senegal","Irak","i6"),
-    ("Uruguay","España","h5"), ("Cabo Verde","Arabia Saudita","h6"),
+    ("Uruguay","España","h5"), ("Cape Verde Islands","Arabia Saudita","h6"),
     ("Panamá","Inglaterra","l5"), ("Croacia","Ghana","l6"),
-    ("Colombia","Portugal","k5"), ("RD Congo","Uzbekistán","k6"),
+    ("Colombia","Portugal","k5"), ("Congo DR","Uzbekistán","k6"),
     ("Jordania","Argentina","j5"), ("Argelia","Austria","j6"),
 ]
 
