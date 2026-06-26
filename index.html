@@ -1494,7 +1494,9 @@ function loadSavedSlots(){
 }
 
 async function saveSlots(){
-  const slots = {};
+  // Hacer merge con los slots existentes para no perder los previos
+  const slots = JSON.parse(JSON.stringify(STATE.matchSlots || {}));
+  let count = 0;
   document.querySelectorAll('.slot-select').forEach(sel => {
     if(!sel.value) return;
     const mid = sel.dataset.mid;
@@ -1503,7 +1505,13 @@ async function saveSlots(){
     if(!slots[mid]) slots[mid] = {};
     slots[mid][side] = sel.value;
     slots[mid][side+'Code'] = code;
+    count++;
   });
+  
+  if(count === 0){
+    alert('⚠️ Selecciona al menos un equipo antes de guardar');
+    return;
+  }
   
   try {
     await updateDoc(REF, { matchSlots: slots });
@@ -1517,9 +1525,10 @@ async function saveSlots(){
     STATE.matchSlots = slots;
     renderMatches();
     showError('');
-    alert('✅ Clasificados guardados');
+    alert('✅ Clasificados guardados (' + count + ' selecciones)');
   } catch(e) {
     showError('Error guardando: ' + e.message);
+    alert('❌ Error: ' + e.message);
   }
 }
 
