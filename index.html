@@ -31,12 +31,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tab i{display:block;font-size:20px;margin-bottom:3px}
 .tab.active{color:#fff}
 .tab:nth-child(1).active{background:var(--wc-blue)}
-.tab:nth-child(2).active{background:#2E8B57}
-.tab:nth-child(3).active{background:var(--wc-red)}
-.tab:nth-child(4).active{background:var(--wc-purple)}
-.tab:nth-child(5).active{background:var(--wc-green)}
-.tab:nth-child(6).active{background:#E67E22}
-.tab:nth-child(7).active{background:#555}
+.tab:nth-child(2).active{background:#8B0000}
+.tab:nth-child(3).active{background:#2E8B57}
+.tab:nth-child(4).active{background:var(--wc-red)}
+.tab:nth-child(5).active{background:var(--wc-purple)}
+.tab:nth-child(6).active{background:var(--wc-green)}
+.tab:nth-child(7).active{background:#E67E22}
+.tab:nth-child(8).active{background:#555}
 /* Apuesta campeón */
 .champion-card{background:linear-gradient(135deg,#003DA5,#6A0DAD);border-radius:16px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden}
 .champion-card::before{content:'🏆';position:absolute;right:-10px;top:-10px;font-size:80px;opacity:0.15}
@@ -247,15 +248,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="main-app" style="display:none">
     <div class="user-bar"><span id="welcome-msg"></span><button class="logout-btn">Cambiar usuario</button></div>
     <div class="tabs">
-      <button class="tab active"><i class="ti ti-ball-football"></i>Partidos</button>
+      <button class="tab active"><i class="ti ti-ball-football"></i>Grupos</button>
+      <button class="tab"><i class="ti ti-sword"></i>Eliminatoria</button>
       <button class="tab"><i class="ti ti-history"></i>Historial</button>
       <button class="tab"><i class="ti ti-calendar"></i>Calendario</button>
-      <button class="tab"><i class="ti ti-table"></i>Grupos</button>
+      <button class="tab"><i class="ti ti-table"></i>Posiciones</button>
       <button class="tab"><i class="ti ti-trophy"></i>Ranking</button>
       <button class="tab"><i class="ti ti-chart-line"></i>Stats</button>
       <button class="tab" id="tab-btn-admin"><i class="ti ti-shield-star"></i>Admin</button>
     </div>
     <div id="tab-matches" class="section active"></div>
+    <div id="tab-knockout" class="section"></div>
     <div id="tab-history" class="section"></div>
     <div id="tab-calendar" class="section"></div>
     <div id="tab-groups" class="section"></div>
@@ -577,21 +580,44 @@ const MATCHES = [
   {id:"j5",group:"Grupo J",glbl:"glbl-j",mc:"group-j",home:"Jordania",hc:"jo",away:"Argentina",ac:"ar",date:"27 Jun 22:00",dt:"2026-06-27T22:00"},
   {id:"j6",group:"Grupo J",glbl:"glbl-j",mc:"group-j",home:"Argelia",hc:"dz",away:"Austria",ac:"at",date:"27 Jun 22:00",dt:"2026-06-27T22:00"},
   // Fase Final
-  {id:"r1",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° A",hc:null,away:"2° B",ac:null,date:"29 Jun",dt:"2026-06-29T00:00"},
-  {id:"r2",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° C",hc:null,away:"2° D",ac:null,date:"29 Jun",dt:"2026-06-29T12:00"},
-  {id:"r3",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° E",hc:null,away:"2° F",ac:null,date:"30 Jun",dt:"2026-06-30T00:00"},
-  {id:"r4",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° G",hc:null,away:"2° H",ac:null,date:"30 Jun",dt:"2026-06-30T12:00"},
-  {id:"r5",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° I",hc:null,away:"2° J",ac:null,date:"1 Jul",dt:"2026-07-01T00:00"},
-  {id:"r6",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° K",hc:null,away:"2° L",ac:null,date:"1 Jul",dt:"2026-07-01T12:00"},
-  {id:"r7",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° B",hc:null,away:"2° A",ac:null,date:"2 Jul",dt:"2026-07-02T00:00"},
-  {id:"r8",group:"Octavos de final",glbl:"glbl-q",mc:"group-q",home:"1° D",hc:null,away:"2° C",ac:null,date:"2 Jul",dt:"2026-07-02T12:00"},
-  {id:"q1",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"QF1",hc:null,away:"QF2",ac:null,date:"5 Jul",dt:"2026-07-05T00:00"},
-  {id:"q2",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"QF3",hc:null,away:"QF4",ac:null,date:"5 Jul",dt:"2026-07-05T12:00"},
-  {id:"q3",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"QF5",hc:null,away:"QF6",ac:null,date:"6 Jul",dt:"2026-07-06T00:00"},
-  {id:"q4",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"QF7",hc:null,away:"QF8",ac:null,date:"6 Jul",dt:"2026-07-06T12:00"},
-  {id:"s1",group:"Semifinales",glbl:"glbl-s",mc:"group-s",home:"SF1",hc:null,away:"SF2",ac:null,date:"14 Jul 15:00",dt:"2026-07-14T15:00"},
-  {id:"s2",group:"Semifinales",glbl:"glbl-s",mc:"group-s",home:"SF3",hc:null,away:"SF4",ac:null,date:"15 Jul 15:00",dt:"2026-07-15T15:00"},
-  {id:"f1x",group:"Gran Final 🏆",glbl:"glbl-f2",mc:"group-final",home:"Finalista 1",hc:null,away:"Finalista 2",ac:null,date:"19 Jul 15:00",dt:"2026-07-19T15:00"},
+  // Eliminatoria de 32
+  {id:"m1",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"Sudáfrica",hc:"za",away:"Canadá",ac:"ca",date:"28 Jun 21:00",dt:"2026-06-28T21:00"},
+  {id:"m2",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° C",hc:null,away:"2° F",ac:null,date:"29 Jun 13:00",dt:"2026-06-29T13:00"},
+  {id:"m3",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"Alemania",hc:"de",away:"3° ABCDF",ac:null,date:"29 Jun 21:30",dt:"2026-06-29T21:30"},
+  {id:"m4",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° F",hc:null,away:"Marruecos",ac:"ma",date:"30 Jun 02:00",dt:"2026-06-30T02:00"},
+  {id:"m5",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"2° E",hc:null,away:"2° I",ac:null,date:"30 Jun 18:00",dt:"2026-06-30T18:00"},
+  {id:"m6",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° I",hc:null,away:"3° CDFGH",ac:null,date:"30 Jun 22:00",dt:"2026-06-30T22:00"},
+  {id:"m7",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"México",hc:"mx",away:"3° CEFHI",ac:null,date:"1 Jul 02:00",dt:"2026-07-01T02:00"},
+  {id:"m8",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° L",hc:null,away:"3° EHIJK",ac:null,date:"1 Jul 17:00",dt:"2026-07-01T17:00"},
+  {id:"m9",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° G",hc:null,away:"3° AEHIJ",ac:null,date:"1 Jul 21:00",dt:"2026-07-01T21:00"},
+  {id:"m10",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"Estados Unidos",hc:"us",away:"3° BEFIJ",ac:null,date:"2 Jul 01:00",dt:"2026-07-02T01:00"},
+  {id:"m11",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"Brasil",hc:"br",away:"1° D",ac:null,date:"2 Jul 13:00",dt:"2026-07-02T13:00"},
+  {id:"m12",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° J",hc:null,away:"2° I",ac:null,date:"2 Jul 21:00",dt:"2026-07-02T21:00"},
+  {id:"m13",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° K",hc:null,away:"2° L",ac:null,date:"3 Jul 13:00",dt:"2026-07-03T13:00"},
+  {id:"m14",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° B",hc:null,away:"2° A",ac:null,date:"3 Jul 21:00",dt:"2026-07-03T21:00"},
+  {id:"m15",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° H",hc:null,away:"2° G",ac:null,date:"4 Jul 13:00",dt:"2026-07-04T13:00"},
+  {id:"m16",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° E",hc:null,away:"2° J",ac:null,date:"4 Jul 21:00",dt:"2026-07-04T21:00"},
+  // Octavos de final (Round of 16) — 8 partidos
+  {id:"o1",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m1",hc:null,away:"Ganador m2",ac:null,date:"5 Jul",dt:"2026-07-05T13:00"},
+  {id:"o2",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m3",hc:null,away:"Ganador m4",ac:null,date:"5 Jul",dt:"2026-07-05T21:00"},
+  {id:"o3",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m5",hc:null,away:"Ganador m6",ac:null,date:"6 Jul",dt:"2026-07-06T13:00"},
+  {id:"o4",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m7",hc:null,away:"Ganador m8",ac:null,date:"6 Jul",dt:"2026-07-06T21:00"},
+  {id:"o5",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m9",hc:null,away:"Ganador m10",ac:null,date:"7 Jul",dt:"2026-07-07T13:00"},
+  {id:"o6",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m11",hc:null,away:"Ganador m12",ac:null,date:"7 Jul",dt:"2026-07-07T21:00"},
+  {id:"o7",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m13",hc:null,away:"Ganador m14",ac:null,date:"8 Jul",dt:"2026-07-08T13:00"},
+  {id:"o8",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m15",hc:null,away:"Ganador m16",ac:null,date:"8 Jul",dt:"2026-07-08T21:00"},
+  // Cuartos de final — 4 partidos
+  {id:"q1",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"Ganador o1",hc:null,away:"Ganador o2",ac:null,date:"10 Jul",dt:"2026-07-10T15:00"},
+  {id:"q2",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"Ganador o3",hc:null,away:"Ganador o4",ac:null,date:"10 Jul",dt:"2026-07-10T21:00"},
+  {id:"q3",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"Ganador o5",hc:null,away:"Ganador o6",ac:null,date:"11 Jul",dt:"2026-07-11T15:00"},
+  {id:"q4",group:"Cuartos de final",glbl:"glbl-q",mc:"group-q",home:"Ganador o7",hc:null,away:"Ganador o8",ac:null,date:"11 Jul",dt:"2026-07-11T21:00"},
+  // Semifinales
+  {id:"s1",group:"Semifinales",glbl:"glbl-s",mc:"group-s",home:"SemiF1",hc:null,away:"SemiF2",ac:null,date:"14 Jul",dt:"2026-07-14T15:00"},
+  {id:"s2",group:"Semifinales",glbl:"glbl-s",mc:"group-s",home:"SemiF3",hc:null,away:"SemiF4",ac:null,date:"15 Jul",dt:"2026-07-15T15:00"},
+  // 3er lugar
+  {id:"tp",group:"3er Lugar",glbl:"glbl-s",mc:"group-s",home:"3erF1",hc:null,away:"3erF2",ac:null,date:"18 Jul",dt:"2026-07-18T15:00"},
+  // Gran Final
+  {id:"f1x",group:"Gran Final 🏆",glbl:"glbl-f2",mc:"group-final",home:"Finalista 1",hc:null,away:"Finalista 2",ac:null,date:"19 Jul",dt:"2026-07-19T15:00"},
 ];
 
 // Sort by datetime
@@ -648,6 +674,7 @@ onSnapshot(REF, snap => {
   STATE.pins     = d.pins     || {};
   STATE.unlocked = d.unlocked || [];
   STATE.champion = d.champion || {picks:{}, winner:null};
+    STATE.matchSlots = d.matchSlots || {};
   showError("");
   renderChips();
   if(CU){ renderMatches(); renderHistory(); renderLeaderboard(); renderAdmin(); }
@@ -740,13 +767,13 @@ document.querySelector(".logout-btn").addEventListener("click", () => {
 });
 
 document.querySelectorAll(".tab").forEach((tab, i) => {
-  const names = ["matches","history","calendar","groups","leaderboard","stats","admin"];
+  const names = ["matches","knockout","history","calendar","groups","leaderboard","stats","admin"];
   tab.addEventListener("click", () => showTab(names[i]));
 });
 
 function showTab(t){
   if(t==="admin"&&CU!=="Juan") return;
-  ["matches","history","calendar","groups","leaderboard","stats","admin"].forEach((x,i)=>{
+  ["matches","knockout","history","calendar","groups","leaderboard","stats","admin"].forEach((x,i)=>{
     document.getElementById("tab-"+x).classList.toggle("active", x===t);
     document.querySelectorAll(".tab")[i].classList.toggle("active", x===t);
   });
@@ -756,6 +783,8 @@ function showTab(t){
   if(t==="history") renderHistory();
   if(t==="groups") renderGroups();
   if(t==="stats") renderStats();
+  if(t==="knockout") renderMatches("knockout");
+  if(t==="matches") renderMatches();
 }
 
 function calcPts(p,r){
@@ -766,10 +795,14 @@ function calcPts(p,r){
   return pw===rw ? 1 : 0;
 }
 
-function renderMatches(){
+
+function renderMatches(mode){
+  mode = mode || "groups";
+  const targetId = mode === "knockout" ? "tab-knockout" : "tab-matches";
   const my = STATE.preds[CU] || {};
   const res = STATE.results  || {};
   let lastDate="", html="";
+  const groupMatches = MATCHES.filter(m => m.group && m.group.startsWith("Grupo"));
 
   // Card apuesta campeón
   const locked = isChampionLocked();
@@ -825,11 +858,19 @@ function renderMatches(){
     ${champContent}
   </div>`;
 
-  // Solo partidos NO finalizados
-  const pending = MATCHES.filter(m => res[m.id] === undefined);
+  // En modo knockout: solo eliminatoria. En modo groups: solo grupos
+  const pending = mode === "knockout"
+    ? MATCHES.filter(m => m.group && !m.group.startsWith("Grupo"))
+    : MATCHES.filter(m => res[m.id] === undefined && m.group && m.group.startsWith("Grupo"));
+  
+  // En modo knockout no se muestra la card de apuesta campeón
+  if(mode === "knockout") html = "";
 
   if(!pending.length){
-    document.getElementById("tab-matches").innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">🏆 ¡Todos los partidos han finalizado!<br>Revisa el Historial para ver tus resultados.</div>`;
+    const msg = mode === "knockout"
+      ? `<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">🏆 La fase eliminatoria comienza el 28 de junio.</div>`
+      : `<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">🏆 ¡Todos los partidos de grupos han finalizado!</div>`;
+    document.getElementById(targetId).innerHTML = msg;
     return;
   }
 
@@ -948,7 +989,7 @@ function renderMatches(){
     </div>`;
   });
 
-  document.getElementById("tab-matches").innerHTML = html;
+  document.getElementById(targetId).innerHTML = html;
   startCountdowns();
 
   // Botón apuesta campeón
@@ -1128,7 +1169,9 @@ function computeStandings(group){
 
 function renderGroups(){
   const groups = [...new Set(MATCHES.map(m=>m.group))]; // respeta orden de aparición (A, B, C...)
-  let html = `<div class="admin-info">📊 Posiciones calculadas con los resultados sincronizados.</div>`;
+  const slotsHTML = renderAdminSlots();
+  let html = `${slotsHTML}
+    <div class="admin-info">📊 Posiciones calculadas con los resultados sincronizados.</div>`;
 
   groups.forEach(g=>{
     const standings = computeStandings(g);
@@ -1329,6 +1372,157 @@ function renderStats(){
   }
 }
 
+
+// ─── Admin: Asignar clasificados a Eliminatoria de 32 ──────────────────────
+function renderAdminSlots(){
+  const slotRows = `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">28 Jun 21:00</span>
+        <span style="font-weight:700;font-size:12px">Sudáfrica</span>
+        <span style="color:#aaa">vs</span>
+        <span style="font-weight:700;font-size:12px">Canadá</span>
+        <span style="color:#aaa;font-size:10px">[m1]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">29 Jun 13:00</span>
+        <select class="slot-select" data-mid="m2" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° C --</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m2" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° F --</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option></select>
+        <span style="color:#aaa;font-size:10px">[m2]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">29 Jun 21:30</span>
+        <span style="font-weight:700;font-size:12px">Alemania</span>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m3" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° ABCDF --</option><option value="México" data-code="mx">México</option><option value="Sudáfrica" data-code="za">Sudáfrica</option><option value="Corea del Sur" data-code="kr">Corea del Sur</option><option value="Rep. Checa" data-code="cz">Rep. Checa</option><option value="Canadá" data-code="ca">Canadá</option><option value="Bosnia y Herz." data-code="ba">Bosnia y Herz.</option><option value="Catar" data-code="qa">Catar</option><option value="Suiza" data-code="ch">Suiza</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option><option value="Estados Unidos" data-code="us">Estados Unidos</option><option value="Paraguay" data-code="py">Paraguay</option><option value="Australia" data-code="au">Australia</option><option value="Turquía" data-code="tr">Turquía</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option></select>
+        <span style="color:#aaa;font-size:10px">[m3]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">30 Jun 02:00</span>
+        <select class="slot-select" data-mid="m4" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° F --</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option></select>
+        <span style="color:#aaa">vs</span>
+        <span style="font-weight:700;font-size:12px">Marruecos</span>
+        <span style="color:#aaa;font-size:10px">[m4]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">30 Jun 18:00</span>
+        <select class="slot-select" data-mid="m5" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° E --</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m5" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° I --</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
+        <span style="color:#aaa;font-size:10px">[m5]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">30 Jun 22:00</span>
+        <select class="slot-select" data-mid="m6" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° I --</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m6" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° CDFGH --</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option><option value="Estados Unidos" data-code="us">Estados Unidos</option><option value="Paraguay" data-code="py">Paraguay</option><option value="Australia" data-code="au">Australia</option><option value="Turquía" data-code="tr">Turquía</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option><option value="Bélgica" data-code="be">Bélgica</option><option value="Egipto" data-code="eg">Egipto</option><option value="Irán" data-code="ir">Irán</option><option value="Nueva Zelanda" data-code="nz">Nueva Zelanda</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option></select>
+        <span style="color:#aaa;font-size:10px">[m6]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">1 Jul 02:00</span>
+        <span style="font-weight:700;font-size:12px">México</span>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m7" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° CEFHI --</option><option value="Brasil" data-code="br">Brasil</option><option value="Marruecos" data-code="ma">Marruecos</option><option value="Haití" data-code="ht">Haití</option><option value="Escocia" data-code="gb-sct">Escocia</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
+        <span style="color:#aaa;font-size:10px">[m7]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">1 Jul 17:00</span>
+        <select class="slot-select" data-mid="m8" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° L --</option><option value="Inglaterra" data-code="gb-eng">Inglaterra</option><option value="Croacia" data-code="hr">Croacia</option><option value="Ghana" data-code="gh">Ghana</option><option value="Panamá" data-code="pa">Panamá</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m8" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° EHIJK --</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option><option value="Portugal" data-code="pt">Portugal</option><option value="RD Congo" data-code="cd">RD Congo</option><option value="Uzbekistán" data-code="uz">Uzbekistán</option><option value="Colombia" data-code="co">Colombia</option></select>
+        <span style="color:#aaa;font-size:10px">[m8]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">1 Jul 21:00</span>
+        <select class="slot-select" data-mid="m9" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° G --</option><option value="Bélgica" data-code="be">Bélgica</option><option value="Egipto" data-code="eg">Egipto</option><option value="Irán" data-code="ir">Irán</option><option value="Nueva Zelanda" data-code="nz">Nueva Zelanda</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m9" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° AEHIJ --</option><option value="México" data-code="mx">México</option><option value="Sudáfrica" data-code="za">Sudáfrica</option><option value="Corea del Sur" data-code="kr">Corea del Sur</option><option value="Rep. Checa" data-code="cz">Rep. Checa</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
+        <span style="color:#aaa;font-size:10px">[m9]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">2 Jul 01:00</span>
+        <span style="font-weight:700;font-size:12px">Estados Unidos</span>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m10" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 3° BEFIJ --</option><option value="Canadá" data-code="ca">Canadá</option><option value="Bosnia y Herz." data-code="ba">Bosnia y Herz.</option><option value="Catar" data-code="qa">Catar</option><option value="Suiza" data-code="ch">Suiza</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option><option value="Países Bajos" data-code="nl">Países Bajos</option><option value="Japón" data-code="jp">Japón</option><option value="Suecia" data-code="se">Suecia</option><option value="Túnez" data-code="tn">Túnez</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
+        <span style="color:#aaa;font-size:10px">[m10]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">2 Jul 13:00</span>
+        <span style="font-weight:700;font-size:12px">Brasil</span>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m11" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° D --</option><option value="Estados Unidos" data-code="us">Estados Unidos</option><option value="Paraguay" data-code="py">Paraguay</option><option value="Australia" data-code="au">Australia</option><option value="Turquía" data-code="tr">Turquía</option></select>
+        <span style="color:#aaa;font-size:10px">[m11]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">2 Jul 21:00</span>
+        <select class="slot-select" data-mid="m12" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° J --</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m12" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° I --</option><option value="Francia" data-code="fr">Francia</option><option value="Senegal" data-code="sn">Senegal</option><option value="Irak" data-code="iq">Irak</option><option value="Noruega" data-code="no">Noruega</option></select>
+        <span style="color:#aaa;font-size:10px">[m12]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">3 Jul 13:00</span>
+        <select class="slot-select" data-mid="m13" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° K --</option><option value="Portugal" data-code="pt">Portugal</option><option value="RD Congo" data-code="cd">RD Congo</option><option value="Uzbekistán" data-code="uz">Uzbekistán</option><option value="Colombia" data-code="co">Colombia</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m13" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° L --</option><option value="Inglaterra" data-code="gb-eng">Inglaterra</option><option value="Croacia" data-code="hr">Croacia</option><option value="Ghana" data-code="gh">Ghana</option><option value="Panamá" data-code="pa">Panamá</option></select>
+        <span style="color:#aaa;font-size:10px">[m13]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">3 Jul 21:00</span>
+        <select class="slot-select" data-mid="m14" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° B --</option><option value="Canadá" data-code="ca">Canadá</option><option value="Bosnia y Herz." data-code="ba">Bosnia y Herz.</option><option value="Catar" data-code="qa">Catar</option><option value="Suiza" data-code="ch">Suiza</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m14" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° A --</option><option value="México" data-code="mx">México</option><option value="Sudáfrica" data-code="za">Sudáfrica</option><option value="Corea del Sur" data-code="kr">Corea del Sur</option><option value="Rep. Checa" data-code="cz">Rep. Checa</option></select>
+        <span style="color:#aaa;font-size:10px">[m14]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">4 Jul 13:00</span>
+        <select class="slot-select" data-mid="m15" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° H --</option><option value="España" data-code="es">España</option><option value="Cabo Verde" data-code="cv">Cabo Verde</option><option value="Arabia Saudita" data-code="sa">Arabia Saudita</option><option value="Uruguay" data-code="uy">Uruguay</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m15" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° G --</option><option value="Bélgica" data-code="be">Bélgica</option><option value="Egipto" data-code="eg">Egipto</option><option value="Irán" data-code="ir">Irán</option><option value="Nueva Zelanda" data-code="nz">Nueva Zelanda</option></select>
+        <span style="color:#aaa;font-size:10px">[m15]</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f0f0ea;font-size:12px">
+        <span style="color:#aaa;min-width:40px">4 Jul 21:00</span>
+        <select class="slot-select" data-mid="m16" data-side="home" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 1° E --</option><option value="Alemania" data-code="de">Alemania</option><option value="Curazao" data-code="cw">Curazao</option><option value="Costa de Marfil" data-code="ci">Costa de Marfil</option><option value="Ecuador" data-code="ec">Ecuador</option></select>
+        <span style="color:#aaa">vs</span>
+        <select class="slot-select" data-mid="m16" data-side="away" style="font-size:11px;padding:3px;border-radius:6px;border:1px solid #ccc;max-width:130px"><option value="">-- 2° J --</option><option value="Argentina" data-code="ar">Argentina</option><option value="Argelia" data-code="dz">Argelia</option><option value="Austria" data-code="at">Austria</option><option value="Jordania" data-code="jo">Jordania</option></select>
+        <span style="color:#aaa;font-size:10px">[m16]</span>
+      </div>`;
+  
+  const html = `<div style="background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:14px 15px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🏆 Asignar clasificados — Eliminatoria de 32</div>
+    <div style="font-size:11px;color:#888;margin-bottom:10px">Selecciona el equipo clasificado para cada slot. Se guardará en Firebase automáticamente.</div>
+    ${slotRows}
+    <button onclick="saveSlots()" style="margin-top:12px;padding:8px 20px;background:var(--wc-blue);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">💾 Guardar clasificados</button>
+  </div>`;
+  
+  return html;
+}
+
+function loadSavedSlots(){
+  const matches = STATE.matchSlots || {};
+  document.querySelectorAll('.slot-select').forEach(sel => {
+    const mid = sel.dataset.mid;
+    const side = sel.dataset.side;
+    const saved = matches[mid]?.[side];
+    if(saved) sel.value = saved;
+  });
+}
+
+async function saveSlots(){
+  const slots = {};
+  document.querySelectorAll('.slot-select').forEach(sel => {
+    if(!sel.value) return;
+    const mid = sel.dataset.mid;
+    const side = sel.dataset.side;
+    const code = sel.options[sel.selectedIndex]?.dataset?.code || null;
+    if(!slots[mid]) slots[mid] = {};
+    slots[mid][side] = sel.value;
+    slots[mid][side+'Code'] = code;
+  });
+  
+  try {
+    await updateDoc(REF, { matchSlots: slots });
+    // Actualizar MATCHES en memoria
+    Object.entries(slots).forEach(([mid, data]) => {
+      const m = MATCHES.find(x => x.id === mid);
+      if(!m) return;
+      if(data.home){ m.home = data.home; m.hc = data.homeCode; }
+      if(data.away){ m.away = data.away; m.ac = data.awayCode; }
+    });
+    STATE.matchSlots = slots;
+    renderMatches();
+    showError('');
+    alert('✅ Clasificados guardados');
+  } catch(e) {
+    showError('Error guardando: ' + e.message);
+  }
+}
+
 function calcUserStats(user){
   const p=STATE.preds[user]||{}, res=STATE.results||{};
   let pts=0,ex=0,win=0,fail=0,played=0;
@@ -1415,9 +1609,43 @@ function renderAdmin(){
   }).join('')}
   </div>
   </div>`;
-  MATCHES.forEach(m=>{
+  const doneMatches = MATCHES.filter(m=>res[m.id]);
+  const pendingMatches = MATCHES.filter(m=>!res[m.id]);
+  
+  // Partidos con resultado (colapsables)
+  if(doneMatches.length){
+    html+=`<div style="margin-bottom:8px">
+      <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.textContent=this.nextElementSibling.style.display==='none'?'▼ Mostrar finalizados (${doneMatches.length})':'▲ Ocultar finalizados (${doneMatches.length})'" 
+        style="font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid #ddd;background:#f5f5f0;cursor:pointer;font-weight:600;margin-bottom:6px">
+        ▼ Mostrar finalizados (${doneMatches.length})
+      </button>
+      <div style="display:none">`;
+    doneMatches.forEach(m=>{
+      const r=res[m.id];
+      const rl=`<span style="color:var(--wc-green);font-weight:700">${r.h}–${r.a}</span>`;
+      html+=`<div class="admin-card" style="opacity:0.7">
+        <div class="admin-card-top">
+          <div class="admin-teams">${AFLAG(m.hc)} ${m.home} <span style="color:#ccc;font-weight:400">vs</span> ${m.away} ${AFLAG(m.ac)}</div>
+          ${rl}
+        </div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:6px">${m.date}</div>
+        <div class="admin-row">
+          <label>Resultado:</label>
+          <input class="ainput" id="rh_${m.id}" type="number" min="0" max="20" value="${r.h}" placeholder="0">
+          <span style="font-size:18px;color:#ccc;font-weight:700">–</span>
+          <input class="ainput" id="ra_${m.id}" type="number" min="0" max="20" value="${r.a}" placeholder="0">
+          <button class="set-btn" data-id="${m.id}">Actualizar</button>
+          <button class="del-btn" data-id="${m.id}">Borrar</button>
+        </div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  }
+  
+  // Partidos pendientes (siempre visibles)
+  pendingMatches.forEach(m=>{
     const r=res[m.id];
-    const rl=r?`<span style="color:var(--wc-blue);font-weight:700">${r.h}–${r.a}</span>`:`<span style="color:#bbb">Sin resultado</span>`;
+    const rl=`<span style="color:#bbb">Sin resultado</span>`;
     html+=`<div class="admin-card">
       <div class="admin-card-top">
         <div class="admin-teams">${AFLAG(m.hc)} ${m.home} <span style="color:#ccc;font-weight:400">vs</span> ${m.away} ${AFLAG(m.ac)}</div>
@@ -1426,15 +1654,15 @@ function renderAdmin(){
       <div style="font-size:11px;color:#aaa;margin-bottom:6px">${m.date}</div>
       <div class="admin-row">
         <label>Resultado:</label>
-        <input class="ainput" id="rh_${m.id}" type="number" min="0" max="20" value="${r?r.h:""}" placeholder="0">
+        <input class="ainput" id="rh_${m.id}" type="number" min="0" max="20" value="" placeholder="0">
         <span style="font-size:18px;color:#ccc;font-weight:700">–</span>
-        <input class="ainput" id="ra_${m.id}" type="number" min="0" max="20" value="${r?r.a:""}" placeholder="0">
+        <input class="ainput" id="ra_${m.id}" type="number" min="0" max="20" value="" placeholder="0">
         <button class="set-btn" data-id="${m.id}">Guardar</button>
-        ${r?`<button class="del-btn" data-id="${m.id}">Borrar</button>`:""}
       </div>
     </div>`;
   });
   document.getElementById("tab-admin").innerHTML = html;
+  loadSavedSlots();
   document.querySelectorAll(".set-btn[data-id]").forEach(btn =>
     btn.addEventListener("click", async () => {
       const id=btn.dataset.id;
