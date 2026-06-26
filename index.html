@@ -674,7 +674,14 @@ onSnapshot(REF, snap => {
   STATE.pins     = d.pins     || {};
   STATE.unlocked = d.unlocked || [];
   STATE.champion = d.champion || {picks:{}, winner:null};
-    STATE.matchSlots = d.matchSlots || {};
+  STATE.matchSlots = d.matchSlots || {};
+  // Aplicar matchSlots a MATCHES en memoria para que se vean los equipos asignados
+  Object.entries(STATE.matchSlots).forEach(([mid, data]) => {
+    const m = MATCHES.find(x => x.id === mid);
+    if(!m) return;
+    if(data.home){ m.home = data.home; m.hc = data.homeCode || null; }
+    if(data.away){ m.away = data.away; m.ac = data.awayCode || null; }
+  });
   showError("");
   renderChips();
   if(CU){ renderMatches(); renderMatches("knockout"); renderHistory(); renderLeaderboard(); renderAdmin(); }
