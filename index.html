@@ -677,7 +677,7 @@ onSnapshot(REF, snap => {
     STATE.matchSlots = d.matchSlots || {};
   showError("");
   renderChips();
-  if(CU){ renderMatches(); renderHistory(); renderLeaderboard(); renderAdmin(); }
+  if(CU){ renderMatches(); renderMatches("knockout"); renderHistory(); renderLeaderboard(); renderAdmin(); }
 }, err => showError("⚠️ Firebase: " + err.message));
 
 document.getElementById("name-input").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
