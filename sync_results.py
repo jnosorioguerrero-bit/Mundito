@@ -126,7 +126,15 @@ def main():
         and m["score"]["fullTime"]["home"] is not None
         and m["score"]["fullTime"]["away"] is not None
     ]
-
+    print("\n=== DEBUG: Partidos próximos ===")
+    for m in matches:
+        if m["status"] in ["SCHEDULED", "TIMED"]:
+            h = m["homeTeam"]["name"]
+            a = m["awayTeam"]["name"]
+            d = m["utcDate"][:10]
+            if d in ["2026-06-26", "2026-06-27"]:
+                print(f"  {d}  {h}  vs  {a}")
+    print("===\n")
     print(f"Partidos terminados en la API: {len(finished)}")
 
     updated = False
