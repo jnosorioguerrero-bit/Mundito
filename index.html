@@ -581,7 +581,7 @@ const MATCHES = [
   {id:"j6",group:"Grupo J",glbl:"glbl-j",mc:"group-j",home:"Argelia",hc:"dz",away:"Austria",ac:"at",date:"27 Jun 22:00",dt:"2026-06-27T22:00"},
   // Fase Final
   // Eliminatoria de 32
-  {id:"m1",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"2° A",hc:null,away:"2° B",ac:null,date:"28 Jun 21:00",dt:"2026-06-28T21:00"},
+  {id:"m1",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"2° A",hc:null,away:"1° B",ac:null,date:"28 Jun 21:00",dt:"2026-06-28T21:00"},
   {id:"m2",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° C",hc:null,away:"2° F",ac:null,date:"29 Jun 13:00",dt:"2026-06-29T13:00"},
   {id:"m3",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° E",hc:null,away:"3° ABCDF",ac:null,date:"29 Jun 21:30",dt:"2026-06-29T21:30"},
   {id:"m4",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° F",hc:null,away:"2° C",ac:null,date:"30 Jun 02:00",dt:"2026-06-30T02:00"},
@@ -591,12 +591,12 @@ const MATCHES = [
   {id:"m8",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° L",hc:null,away:"3° EHIJK",ac:null,date:"1 Jul 17:00",dt:"2026-07-01T17:00"},
   {id:"m9",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° G",hc:null,away:"3° AEHIJ",ac:null,date:"1 Jul 21:00",dt:"2026-07-01T21:00"},
   {id:"m10",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° D",hc:null,away:"3° BEFIJ",ac:null,date:"2 Jul 01:00",dt:"2026-07-02T01:00"},
-  {id:"m11",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° C",hc:null,away:"2° D",ac:null,date:"2 Jul 13:00",dt:"2026-07-02T13:00"},
-  {id:"m12",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° J",hc:null,away:"2° I",ac:null,date:"2 Jul 21:00",dt:"2026-07-02T21:00"},
-  {id:"m13",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° K",hc:null,away:"2° L",ac:null,date:"3 Jul 13:00",dt:"2026-07-03T13:00"},
-  {id:"m14",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° B",hc:null,away:"2° A",ac:null,date:"3 Jul 21:00",dt:"2026-07-03T21:00"},
-  {id:"m15",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° H",hc:null,away:"2° G",ac:null,date:"4 Jul 13:00",dt:"2026-07-04T13:00"},
-  {id:"m16",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° E",hc:null,away:"2° J",ac:null,date:"4 Jul 21:00",dt:"2026-07-04T21:00"},
+  {id:"m11",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"2° K",hc:null,away:"2° L",ac:null,date:"2 Jul 13:00",dt:"2026-07-02T13:00"},
+  {id:"m12",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° H",hc:null,away:"2° J",ac:null,date:"2 Jul 21:00",dt:"2026-07-02T21:00"},
+  {id:"m13",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° B",hc:null,away:"3° EFGIJ",ac:null,date:"3 Jul 13:00",dt:"2026-07-03T13:00"},
+  {id:"m14",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° J",hc:null,away:"2° H",ac:null,date:"3 Jul 21:00",dt:"2026-07-03T21:00"},
+  {id:"m15",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"1° K",hc:null,away:"3° DEIJL",ac:null,date:"4 Jul 13:00",dt:"2026-07-04T13:00"},
+  {id:"m16",group:"Eliminatoria de 32",glbl:"glbl-m",mc:"group-m",home:"2° D",hc:null,away:"2° G",ac:null,date:"4 Jul 21:00",dt:"2026-07-04T21:00"},
   // Octavos de final (Round of 16) — 8 partidos
   {id:"o1",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m1",hc:null,away:"Ganador m2",ac:null,date:"5 Jul",dt:"2026-07-05T13:00"},
   {id:"o2",group:"Octavos de final",glbl:"glbl-o",mc:"group-o",home:"Ganador m3",hc:null,away:"Ganador m4",ac:null,date:"5 Jul",dt:"2026-07-05T21:00"},
@@ -1402,7 +1402,6 @@ function renderAdminSlots(){
   
   // Función para construir opciones de un slot
   function buildOptions(label, current){
-    // Parsear el label para extraer grupos: "1° A" -> ["A"], "3° ABCDF" -> ["A","B","C","D","F"]
     let grupos = [];
     const match = label.match(/^[123]°\s*([A-Z]+)/);
     if(match){
@@ -1414,6 +1413,8 @@ function renderAdminSlots(){
       (GRUPOS_EQUIPOS[g] || []).forEach(t => {
         if(!seen.has(t.name)){
           seen.add(t.name);
+          // Si el equipo ya está usado en otro slot Y no es el current, lo saltamos
+          if(equiposUsados.has(t.name) && t.name !== current) return;
           const sel = t.name === current ? ' selected' : '';
           opts += `<option value="${t.name}" data-code="${t.code}"${sel}>${t.name}</option>`;
         }
@@ -1424,6 +1425,13 @@ function renderAdminSlots(){
   
   // Aplicar matchSlots guardados
   const savedSlots = STATE.matchSlots || {};
+  
+  // Recopilar todos los equipos ya seleccionados en cualquier slot (para excluirlos de otros dropdowns)
+  const equiposUsados = new Set();
+  Object.values(savedSlots).forEach(slot => {
+    if(slot.home) equiposUsados.add(slot.home);
+    if(slot.away) equiposUsados.add(slot.away);
+  });
   
   let slotRows = '';
   r32.forEach(m => {
