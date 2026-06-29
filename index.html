@@ -248,17 +248,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="main-app" style="display:none">
     <div class="user-bar"><span id="welcome-msg"></span><button class="logout-btn">Cambiar usuario</button></div>
     <div class="tabs">
-      <button class="tab active"><i class="ti ti-ball-football"></i>Grupos</button>
-      <button class="tab"><i class="ti ti-sword"></i>Eliminatoria</button>
+      <button class="tab active"><i class="ti ti-sword"></i>Eliminatoria</button>
       <button class="tab"><i class="ti ti-history"></i>Historial</button>
       <button class="tab"><i class="ti ti-calendar"></i>Calendario</button>
-      <button class="tab"><i class="ti ti-table"></i>Posiciones</button>
       <button class="tab"><i class="ti ti-trophy"></i>Ranking</button>
       <button class="tab"><i class="ti ti-chart-line"></i>Stats</button>
       <button class="tab" id="tab-btn-admin"><i class="ti ti-shield-star"></i>Admin</button>
     </div>
-    <div id="tab-matches" class="section active"></div>
-    <div id="tab-knockout" class="section"></div>
+    <div id="tab-knockout" class="section active"></div>
     <div id="tab-history" class="section"></div>
     <div id="tab-calendar" class="section"></div>
     <div id="tab-groups" class="section"></div>
@@ -685,7 +682,7 @@ onSnapshot(REF, snap => {
   });
   showError("");
   renderChips();
-  if(CU){ renderMatches(); renderMatches("knockout"); renderHistory(); renderLeaderboard(); renderAdmin(); }
+  if(CU){ renderMatches("knockout"); renderHistory(); renderLeaderboard(); renderAdmin(); }
 }, err => showError("⚠️ Firebase: " + err.message));
 
 document.getElementById("name-input").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
@@ -738,7 +735,7 @@ async function loginAs(n, pin){
     // show admin tab only for Juan
     const adminBtn=document.getElementById("tab-btn-admin");
     if(adminBtn) adminBtn.style.display=n==="Juan"?"":"none";
-    renderMatches(); renderHistory(); renderLeaderboard(); if(n==="Juan") renderAdmin();
+    renderMatches("knockout"); renderHistory(); renderLeaderboard(); if(n==="Juan") renderAdmin();
     // Arrancar sincronización automática de resultados
     startAutoSync();
   } catch(e){
@@ -771,17 +768,17 @@ document.querySelector(".logout-btn").addEventListener("click", () => {
   document.getElementById("name-input").value = "";
   const adminBtn=document.getElementById("tab-btn-admin");
   if(adminBtn) adminBtn.style.display="none";
-  renderChips(); showTab("matches");
+  renderChips(); showTab("knockout");
 });
 
 document.querySelectorAll(".tab").forEach((tab, i) => {
-  const names = ["matches","knockout","history","calendar","groups","leaderboard","stats","admin"];
+  const names = ["knockout","history","calendar","leaderboard","stats","admin"];
   tab.addEventListener("click", () => showTab(names[i]));
 });
 
 function showTab(t){
   if(t==="admin"&&CU!=="Juan") return;
-  ["matches","knockout","history","calendar","groups","leaderboard","stats","admin"].forEach((x,i)=>{
+  ["knockout","history","calendar","leaderboard","stats","admin"].forEach((x,i)=>{
     document.getElementById("tab-"+x).classList.toggle("active", x===t);
     document.querySelectorAll(".tab")[i].classList.toggle("active", x===t);
   });
@@ -789,10 +786,8 @@ function showTab(t){
   if(t==="admin"&&CU==="Juan") renderAdmin();
   if(t==="calendar") renderCalendar();
   if(t==="history") renderHistory();
-  if(t==="groups") renderGroups();
   if(t==="stats") renderStats();
   if(t==="knockout") renderMatches("knockout");
-  if(t==="matches") renderMatches();
 }
 
 function calcPts(p,r){
@@ -805,7 +800,7 @@ function calcPts(p,r){
 
 
 function renderMatches(mode){
-  mode = mode || "groups";
+  mode = mode || "knockout";
   const targetId = mode === "knockout" ? "tab-knockout" : "tab-matches";
   const my = STATE.preds[CU] || {};
   const res = STATE.results  || {};
@@ -868,17 +863,14 @@ function renderMatches(mode){
 
   // En modo knockout: solo eliminatoria. En modo groups: solo grupos
   const pending = mode === "knockout"
-    ? MATCHES.filter(m => m.group && !m.group.startsWith("Grupo"))
+    ? MATCHES.filter(m => res[m.id] === undefined && m.group && !m.group.startsWith("Grupo"))
     : MATCHES.filter(m => res[m.id] === undefined && m.group && m.group.startsWith("Grupo"));
-  
-  // En modo knockout no se muestra la card de apuesta campeón
-  if(mode === "knockout") html = "";
 
   if(!pending.length){
     const msg = mode === "knockout"
       ? `<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">🏆 La fase eliminatoria comienza el 28 de junio.</div>`
       : `<div style="text-align:center;padding:3rem 1rem;color:#888;font-size:14px">🏆 ¡Todos los partidos de grupos han finalizado!</div>`;
-    document.getElementById(targetId).innerHTML = msg;
+    document.getElementById(targetId).innerHTML = html + msg;
     return;
   }
 
