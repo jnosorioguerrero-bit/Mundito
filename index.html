@@ -662,28 +662,43 @@ function teamCode(name){
   return c ? c.code : null;
 }
 
-function applyKnockoutProgression(){
+// Resuelve el ganador de un partido de eliminatoria:
+// 1) knockoutWinners explícito (nombre real, no "home"/"away")
+// 2) si no hay, intenta derivar del resultado (solo si hay diferencia de goles)
+function resolveWinner(matchId){
   const winners = STATE.knockoutWinners || {};
+  const stored = winners[matchId];
+  // Ignorar datos corruptos viejos que guardaban "home" o "away" literal
+  if(stored && stored !== "home" && stored !== "away") return stored;
+  // Auto-derivar desde el resultado si no hay empate (empate → penales, requiere selección manual)
+  const r = (STATE.results || {})[matchId];
+  if(!r || r.h === r.a) return null;
+  const src = MATCHES.find(x => x.id === matchId);
+  if(!src) return null;
+  return r.h > r.a ? src.home : src.away;
+}
+
+function applyKnockoutProgression(){
   PROGRESSION.forEach(([targetId, slot, sourceId]) => {
-    const winner = winners[sourceId];
+    const winner = resolveWinner(sourceId);
     if(!winner) return;
     const m = MATCHES.find(x => x.id === targetId);
     if(!m) return;
     const code = teamCode(winner);
-    if(slot === "home" && m.home !== winner){ m.home = winner; m.hc = code; }
-    if(slot === "away" && m.away !== winner){ m.away = winner; m.ac = code; }
+    if(slot === "home"){ m.home = winner; m.hc = code; }
+    if(slot === "away"){ m.away = winner; m.ac = code; }
   });
-  // 3er lugar: perdedores de semifinales (si están en knockoutWinners, el perdedor es el otro)
+  // 3er lugar: perdedores de semifinales
   ["s1","s2"].forEach((sid, i) => {
-    const m = MATCHES.find(x => x.id === sid);
-    const winner = winners[sid];
-    if(!m || !winner) return;
-    const loser = winner === m.home ? m.away : m.home;
-    const loserCode = teamCode(loser);
+    const winner = resolveWinner(sid);
+    if(!winner) return;
+    const src = MATCHES.find(x => x.id === sid);
+    if(!src) return;
+    const loser = winner === src.home ? src.away : src.home;
     const tp = MATCHES.find(x => x.id === "tp");
     if(!tp) return;
-    if(i === 0 && tp.home !== loser){ tp.home = loser; tp.hc = loserCode; }
-    if(i === 1 && tp.away !== loser){ tp.away = loser; tp.ac = loserCode; }
+    if(i === 0){ tp.home = loser; tp.hc = teamCode(loser); }
+    if(i === 1){ tp.away = loser; tp.ac = teamCode(loser); }
   });
 }
 
