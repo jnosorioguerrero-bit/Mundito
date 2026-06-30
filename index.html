@@ -1675,7 +1675,7 @@ function renderAdmin(){
   }).join('')}
   </div>
   </div>`;
-  const doneMatches = MATCHES.filter(m=>res[m.id]);
+  const doneMatches = MATCHES.filter(m=>res[m.id]).reverse();
   const pendingMatches = MATCHES.filter(m=>!res[m.id]);
   
   // Partidos con resultado (colapsables)
