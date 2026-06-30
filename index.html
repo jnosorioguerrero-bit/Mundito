@@ -1680,8 +1680,8 @@ function renderAdmin(){
           <label style="font-size:11px;color:#888">🏆 Ganador:</label>
           <select id="kw_${m.id}" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #ccc">
             <option value="">— Seleccionar —</option>
-            <option value="home"${savedWinner==='home'?' selected':''}>${m.home}</option>
-            <option value="away"${savedWinner==='away'?' selected':''}>${m.away}</option>
+            <option value="${m.home}"${savedWinner===m.home?' selected':''}>${m.home}</option>
+            <option value="${m.away}"${savedWinner===m.away?' selected':''}>${m.away}</option>
           </select>
         </div>` : '';
       html+=`<div class="admin-card" style="opacity:0.7">
