@@ -633,6 +633,60 @@ function isLocked(m){
 let STATE = {users:[], preds:{}, results:{}, pins:{}, unlocked:[], champion:{picks:{}, winner:null}};
 let CU = null;
 
+// Mapa de progresión: [matchId_siguiente, slot("home"|"away"), matchId_origen]
+const PROGRESSION = [
+  // Eliminatoria de 32 → Octavos
+  ["o1","home","m1"],["o1","away","m2"],
+  ["o2","home","m3"],["o2","away","m4"],
+  ["o3","home","m5"],["o3","away","m6"],
+  ["o4","home","m7"],["o4","away","m8"],
+  ["o5","home","m9"],["o5","away","m10"],
+  ["o6","home","m11"],["o6","away","m12"],
+  ["o7","home","m13"],["o7","away","m14"],
+  ["o8","home","m15"],["o8","away","m16"],
+  // Octavos → Cuartos
+  ["q1","home","o1"],["q1","away","o2"],
+  ["q2","home","o3"],["q2","away","o4"],
+  ["q3","home","o5"],["q3","away","o6"],
+  ["q4","home","o7"],["q4","away","o8"],
+  // Cuartos → Semifinales
+  ["s1","home","q1"],["s1","away","q2"],
+  ["s2","home","q3"],["s2","away","q4"],
+  // Semifinales → Final y 3er lugar
+  ["f1x","home","s1"],["f1x","away","s2"],
+  ["tp","home","s1"],["tp","away","s2"],
+];
+
+function teamCode(name){
+  const c = COUNTRIES.find(x => x.name === name);
+  return c ? c.code : null;
+}
+
+function applyKnockoutProgression(){
+  const winners = STATE.knockoutWinners || {};
+  PROGRESSION.forEach(([targetId, slot, sourceId]) => {
+    const winner = winners[sourceId];
+    if(!winner) return;
+    const m = MATCHES.find(x => x.id === targetId);
+    if(!m) return;
+    const code = teamCode(winner);
+    if(slot === "home" && m.home !== winner){ m.home = winner; m.hc = code; }
+    if(slot === "away" && m.away !== winner){ m.away = winner; m.ac = code; }
+  });
+  // 3er lugar: perdedores de semifinales (si están en knockoutWinners, el perdedor es el otro)
+  ["s1","s2"].forEach((sid, i) => {
+    const m = MATCHES.find(x => x.id === sid);
+    const winner = winners[sid];
+    if(!m || !winner) return;
+    const loser = winner === m.home ? m.away : m.home;
+    const loserCode = teamCode(loser);
+    const tp = MATCHES.find(x => x.id === "tp");
+    if(!tp) return;
+    if(i === 0 && tp.home !== loser){ tp.home = loser; tp.hc = loserCode; }
+    if(i === 1 && tp.away !== loser){ tp.away = loser; tp.ac = loserCode; }
+  });
+}
+
 function showError(msg){
   let el = document.getElementById("fb-err");
   if(!el){ el=document.createElement("div"); el.id="fb-err";
@@ -680,6 +734,8 @@ onSnapshot(REF, snap => {
     if(data.home){ m.home = data.home; m.hc = data.homeCode || null; }
     if(data.away){ m.away = data.away; m.ac = data.awayCode || null; }
   });
+  // Auto-propagar ganadores al siguiente round
+  applyKnockoutProgression();
   showError("");
   renderChips();
   if(CU){ renderMatches("knockout"); renderHistory(); renderLeaderboard(); renderAdmin(); }
@@ -1703,7 +1759,8 @@ function renderAdmin(){
         if(winnerSel && winnerSel.value){
           await updateDoc(REF, {[`knockoutWinners.${id}`]: winnerSel.value});
         }
-        renderAdmin(); renderMatches(); renderLeaderboard(); 
+        applyKnockoutProgression();
+        renderAdmin(); renderMatches(); renderLeaderboard();
       }catch(e){ showError("⚠️ Error: "+e.message); }
     })
   );
