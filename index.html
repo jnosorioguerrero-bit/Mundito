@@ -635,23 +635,31 @@ let CU = null;
 
 // Mapa de progresión: [matchId_siguiente, slot("home"|"away"), matchId_origen]
 const PROGRESSION = [
-  // Eliminatoria de 32 → Octavos
-  ["o1","home","m1"],["o1","away","m2"],
-  ["o2","home","m3"],["o2","away","m4"],
-  ["o3","home","m5"],["o3","away","m6"],
+  // Eliminatoria de 32 → Octavos (bracket oficial FIFA 2026)
+  // Match 90: W73(m1) vs W75(m4)
+  ["o1","home","m1"],["o1","away","m4"],
+  // Match 89: W74(m3) vs W77(m6)
+  ["o2","home","m3"],["o2","away","m6"],
+  // Match 91: W76(m2) vs W78(m5)
+  ["o3","home","m2"],["o3","away","m5"],
+  // Match 92: W79(m7) vs W80(m8)
   ["o4","home","m7"],["o4","away","m8"],
-  ["o5","home","m9"],["o5","away","m10"],
-  ["o6","home","m11"],["o6","away","m12"],
-  ["o7","home","m13"],["o7","away","m14"],
-  ["o8","home","m15"],["o8","away","m16"],
-  // Octavos → Cuartos
-  ["q1","home","o1"],["q1","away","o2"],
-  ["q2","home","o3"],["q2","away","o4"],
-  ["q3","home","o5"],["q3","away","o6"],
+  // Match 93: W83(m11) vs W84(m12)
+  ["o5","home","m11"],["o5","away","m12"],
+  // Match 94: W81(m10) vs W82(m9)
+  ["o6","home","m10"],["o6","away","m9"],
+  // Match 95: W86(m14) vs W88(m16)
+  ["o7","home","m14"],["o7","away","m16"],
+  // Match 96: W85(m13) vs W87(m15)
+  ["o8","home","m13"],["o8","away","m15"],
+  // Octavos → Cuartos (Match 97: W89vsW90, 98: W93vsW94, 99: W91vsW92, 100: W95vsW96)
+  ["q1","home","o2"],["q1","away","o1"],
+  ["q2","home","o5"],["q2","away","o6"],
+  ["q3","home","o3"],["q3","away","o4"],
   ["q4","home","o7"],["q4","away","o8"],
   // Cuartos → Semifinales
-  ["s1","home","q1"],["s1","away","q2"],
-  ["s2","home","q3"],["s2","away","q4"],
+  ["s1","home","q1"],["s1","away","q3"],
+  ["s2","home","q2"],["s2","away","q4"],
   // Semifinales → Final y 3er lugar
   ["f1x","home","s1"],["f1x","away","s2"],
   ["tp","home","s1"],["tp","away","s2"],
