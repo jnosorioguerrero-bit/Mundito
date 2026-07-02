@@ -1094,7 +1094,7 @@ function renderMatches(mode){
       const id=btn.dataset.id;
       const m=MATCHES.find(x=>x.id===id);
       const isUnlocked=(STATE.unlocked||[]).includes(CU);
-      if(m&&isLocked(m)&&!isUnlocked){ return; }
+      if(m&&isLocked(m)&&!isUnlocked){ showError("⚠️ Pronóstico cerrado, el partido ya comenzó"); return; }
       // Si está desbloqueado y ya tiene pronóstico, no permitir cambiar
       if(m&&isLocked(m)&&isUnlocked&&(STATE.preds[CU]||{})[id]!==undefined){ return; }
       const hEl=document.getElementById("ph_"+id);
