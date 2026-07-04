@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Quiniela Mundial 2026 ⚽</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
@@ -25,11 +25,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hero p{font-size:14px;color:rgba(255,255,255,0.85);margin-bottom:1rem}
 .hero-flags{display:flex;justify-content:center;gap:5px;flex-wrap:wrap}
 .hf{width:38px;height:26px;object-fit:cover;border-radius:4px;border:1.5px solid rgba(255,255,255,0.35)}
-.container{max-width:600px;margin:0 auto;padding:1.25rem 1rem 3rem}
-.tabs{display:flex;gap:4px;margin-bottom:1.25rem;background:#fff;border-radius:12px;padding:5px;border:1px solid #e0e0d8}
-.tab{flex:1;padding:10px 6px;text-align:center;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s}
-.tab i{display:block;font-size:20px;margin-bottom:3px}
+.container{max-width:600px;margin:0 auto;padding:1.25rem 1rem calc(82px + env(safe-area-inset-bottom))}
+.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;margin:0 auto;max-width:600px;
+  display:flex;gap:0;background:#fff;border-radius:0;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  border:none;border-top:1px solid #e0e0d8;
+  box-shadow:0 -4px 14px rgba(0,0,0,.06);
+}
+.tab{flex:1;min-width:0;padding:6px 2px;text-align:center;font-size:10px;font-weight:700;border-radius:10px;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab i{display:block;font-size:18px;margin-bottom:2px}
 .tab.active{color:#fff}
+.hero.hero-hidden{display:none}
 .tab:nth-child(1).active{background:var(--wc-blue)}
 .tab:nth-child(2).active{background:#8B0000}
 .tab:nth-child(3).active{background:#2E8B57}
@@ -160,6 +167,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .rscore{font-size:26px}
   .legend-seg p{font-size:15px}
 }
+@media(max-width:360px){
+  .tab{font-size:9px}
+  .tab i{font-size:16px}
+}
 
 /* CALENDAR */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -217,7 +228,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<div class="hero">
+<div class="hero" id="hero">
   <div class="hero-inner">
   <span class="hero-ball">⚽</span>
   <h1>Mundial 2026</h1>
@@ -248,9 +259,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="main-app" style="display:none">
     <div class="user-bar"><span id="welcome-msg"></span><button class="logout-btn">Cambiar usuario</button></div>
     <div class="tabs">
-      <button class="tab active"><i class="ti ti-sword"></i>Eliminatoria</button>
+      <button class="tab active"><i class="ti ti-sword"></i>Eliminat.</button>
       <button class="tab"><i class="ti ti-history"></i>Historial</button>
-      <button class="tab"><i class="ti ti-calendar"></i>Calendario</button>
+      <button class="tab"><i class="ti ti-calendar"></i>Calend.</button>
       <button class="tab"><i class="ti ti-trophy"></i>Ranking</button>
       <button class="tab"><i class="ti ti-chart-line"></i>Stats</button>
       <button class="tab" id="tab-btn-admin"><i class="ti ti-shield-star"></i>Admin</button>
@@ -810,6 +821,7 @@ async function loginAs(n, pin){
     CU = n;
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-app").style.display = "block";
+    document.getElementById("hero").classList.add("hero-hidden");
     document.getElementById("welcome-msg").textContent = "👤 " + n;
     // show admin tab only for Juan
     const adminBtn=document.getElementById("tab-btn-admin");
@@ -832,6 +844,7 @@ document.querySelector(".logout-btn").addEventListener("click", () => {
   CU = null;
   document.getElementById("login-section").style.display = "block";
   document.getElementById("main-app").style.display = "none";
+  document.getElementById("hero").classList.remove("hero-hidden");
   document.getElementById("name-input").value = "";
   const adminBtn=document.getElementById("tab-btn-admin");
   if(adminBtn) adminBtn.style.display="none";
