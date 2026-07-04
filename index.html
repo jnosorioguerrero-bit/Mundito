@@ -179,18 +179,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cal-month{font-size:16px;font-weight:800;color:#1a1a1a}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-dow{text-align:center;font-size:10px;font-weight:700;color:#aaa;padding:4px 0;text-transform:uppercase}
-.cal-day{background:#fff;border:1px solid #e8e8e0;border-radius:8px;min-height:62px;padding:4px;position:relative}
+.cal-day{background:#fff;border:1px solid #e8e8e0;border-radius:8px;min-height:40px;padding:3px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .cal-day.empty{background:transparent;border-color:transparent}
 .cal-day.today{border-color:var(--wc-blue);border-width:2px}
-.cal-day-num{font-size:11px;font-weight:700;color:#888;margin-bottom:3px}
+.cal-day.has-matches{cursor:pointer}
+.cal-day.selected{background:#f5f8ff;border-color:var(--wc-blue);border-width:2px}
+.cal-day-num{font-size:11px;font-weight:700;color:#bbb}
+.cal-day.has-matches .cal-day-num{color:#1a1a1a}
 .cal-day.today .cal-day-num{color:var(--wc-blue)}
-.cal-match-chip{font-size:9px;font-weight:700;padding:2px 4px;border-radius:4px;margin-bottom:2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:opacity .1s}
-.cal-match-chip:hover{opacity:.8}
-.cal-match-chip.open{background:#e8eeff;color:var(--wc-blue)}
-.cal-match-chip.locked{background:#fff3cd;color:#856404}
-.cal-match-chip.done{background:#e8ffe8;color:var(--wc-green)}
-.cal-match-chip.pred{background:#EAF3DE;color:#3B6D11}
-.cal-more{font-size:9px;color:#aaa;font-weight:600;margin-top:1px}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;max-width:34px}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.cal-dot.open{background:var(--wc-blue)}
+.cal-dot.pred{background:#3B6D11}
+.cal-dot.locked{background:#E6A700}
+.cal-dot.done{background:var(--wc-green)}
+/* agenda del día seleccionado */
+.cal-agenda{margin-top:16px}
+.cal-agenda-hd{font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.cal-agenda-empty{font-size:13px;color:#999;text-align:center;padding:18px 0}
+.cal-agenda-item{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid #e0e0d8;border-left:3px solid #e0e0d8;border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:opacity .1s}
+.cal-agenda-item:hover{opacity:.85}
+.cal-agenda-item.open{border-left-color:var(--wc-blue)}
+.cal-agenda-item.pred{border-left-color:#3B6D11}
+.cal-agenda-item.locked{border-left-color:#E6A700}
+.cal-agenda-item.done{border-left-color:var(--wc-green)}
+.cal-agenda-top{display:flex;align-items:center;justify-content:space-between}
+.cal-agenda-time{font-size:12px;font-weight:700;color:#888;font-variant-numeric:tabular-nums}
+.cal-agenda-teams{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cal-agenda-vs{color:#bbb;font-weight:400;font-size:11px}
 /* match detail modal */
 .cal-modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:200}
 .cal-modal-box{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:600px;padding:20px;max-height:80vh;overflow-y:auto}
@@ -1924,13 +1940,21 @@ function adminResetPin(user){
 
 /* ---- CALENDARIO ---- */
 let calYear=2026, calMonth=5; // 0-indexed, 5=June
+let calSelectedDay=null;
 
 const MONTH_NAMES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DOW=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
-function renderCalendar(){
+function matchCalStatus(m){
   const res=STATE.results||{};
   const my=(STATE.preds&&STATE.preds[CU])||{};
+  const done=res[m.id]!==undefined;
+  const locked=isLocked(m);
+  const hasPred=my[m.id]!==undefined;
+  return done?'done':locked?'locked':(hasPred?'pred':'open');
+}
+
+function renderCalendar(){
   const firstDay=new Date(calYear,calMonth,1).getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
   const today=new Date();
@@ -1946,6 +1970,14 @@ function renderCalendar(){
     }
   });
 
+  // Día seleccionado: hoy si cae en este mes, si no el primer día con partidos
+  const todayInMonth=today.getMonth()===calMonth&&today.getFullYear()===calYear;
+  const daysWithMatches=Object.keys(byDay).map(Number).sort((a,b)=>a-b);
+  let selectedDay=calSelectedDay;
+  if(selectedDay===null || !byDay[selectedDay]){
+    selectedDay = todayInMonth ? today.getDate() : (daysWithMatches[0] ?? null);
+  }
+
   let html=`<div class="cal-nav">
     <button class="cal-nav-btn" onclick="calPrev()">‹</button>
     <span class="cal-month">${MONTH_NAMES[calMonth]} ${calYear}</span>
@@ -1959,48 +1991,72 @@ function renderCalendar(){
   // Empty cells before first day
   for(let i=0;i<firstDay;i++) html+=`<div class="cal-day empty"></div>`;
 
-  // Days
+  // Days — celdas chicas, solo número + puntos de estado
   for(let day=1;day<=daysInMonth;day++){
     const isToday=today.getDate()===day&&today.getMonth()===calMonth&&today.getFullYear()===calYear;
     const matches=byDay[day]||[];
-    const MAX_SHOW=3;
-    let chips='';
-    matches.slice(0,MAX_SHOW).forEach(m=>{
-      const done=res[m.id]!==undefined;
-      const locked=isLocked(m);
-      const hasPred=my[m.id]!==undefined;
-      let cls=done?'done':locked?'locked':(hasPred?'pred':'open');
-      const hora=m.dt.slice(11,16);
-      const label=`${hora} ${m.home.split(' ')[0]} vs ${m.away.split(' ')[0]}`;
-      chips+=`<span class="cal-match-chip ${cls}" onclick="showCalMatch('${m.id}')">${label}</span>`;
-    });
-    if(matches.length>MAX_SHOW) chips+=`<div class="cal-more">+${matches.length-MAX_SHOW} más</div>`;
-    html+=`<div class="cal-day${isToday?' today':''}">
+    const hasMatches=matches.length>0;
+    const isSelected=day===selectedDay;
+    const dots=matches.slice(0,6).map(m=>`<span class="cal-dot ${matchCalStatus(m)}"></span>`).join('');
+    html+=`<div class="cal-day${isToday?' today':''}${hasMatches?' has-matches':''}${isSelected?' selected':''}"${hasMatches?` onclick="selectCalDay(${day})"`:''}>
       <div class="cal-day-num">${day}</div>
-      ${chips}
+      <div class="cal-dots">${dots}</div>
     </div>`;
   }
   html+='</div>';
 
   // legend
-  html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:11px">
-    <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;background:#e8eeff;border-radius:3px;display:inline-block"></span>Abierto</span>
-    <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;background:#EAF3DE;border-radius:3px;display:inline-block"></span>Con pronóstico</span>
-    <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;background:#fff3cd;border-radius:3px;display:inline-block"></span>Cerrado</span>
-    <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;background:#e8ffe8;border-radius:3px;display:inline-block"></span>Finalizado</span>
+  html+=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:11px">
+    <span style="display:flex;align-items:center;gap:4px"><span class="cal-dot open" style="position:static"></span>Abierto</span>
+    <span style="display:flex;align-items:center;gap:4px"><span class="cal-dot pred" style="position:static"></span>Con pronóstico</span>
+    <span style="display:flex;align-items:center;gap:4px"><span class="cal-dot locked" style="position:static"></span>Cerrado</span>
+    <span style="display:flex;align-items:center;gap:4px"><span class="cal-dot done" style="position:static"></span>Finalizado</span>
   </div>`;
 
+  // agenda del día seleccionado — va hacia abajo, no dentro de la cuadrícula
+  const dayMatches=(selectedDay?byDay[selectedDay]:[])||[];
+  html+=`<div class="cal-agenda">
+    <div class="cal-agenda-hd">${selectedDay?`${selectedDay} de ${MONTH_NAMES[calMonth].toLowerCase()}`:'Sin partidos este mes'}</div>`;
+  if(dayMatches.length===0 && selectedDay){
+    html+=`<div class="cal-agenda-empty">No hay partidos este día</div>`;
+  } else {
+    dayMatches.slice().sort((a,b)=>a.dt.localeCompare(b.dt)).forEach(m=>{
+      const cls=matchCalStatus(m);
+      const label={open:'Abierto',pred:'Pronosticado',locked:'Cerrado',done:'Finalizado'}[cls];
+      const hora=m.dt.slice(11,16);
+      html+=`<div class="cal-agenda-item ${cls}" onclick="showCalMatch('${m.id}')">
+        <div class="cal-agenda-top">
+          <span class="cal-agenda-time">${hora}</span>
+          <span class="badge badge-${cls==='done'?'done':cls==='locked'?'locked':'open'}">${label}</span>
+        </div>
+        <span class="cal-agenda-teams">
+          ${AFLAG(m.hc)}${m.home}
+          <span class="cal-agenda-vs">vs</span>
+          ${m.away}${AFLAG(m.ac)}
+        </span>
+      </div>`;
+    });
+  }
+  html+='</div>';
+
   document.getElementById('tab-calendar').innerHTML=html;
+}
+
+function selectCalDay(day){
+  calSelectedDay=day;
+  renderCalendar();
 }
 
 function calPrev(){
   calMonth--;
   if(calMonth<0){calMonth=11;calYear--;}
+  calSelectedDay=null;
   renderCalendar();
 }
 function calNext(){
   calMonth++;
   if(calMonth>11){calMonth=0;calYear++;}
+  calSelectedDay=null;
   renderCalendar();
 }
 
