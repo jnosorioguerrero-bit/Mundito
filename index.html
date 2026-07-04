@@ -664,6 +664,7 @@ function isLocked(m){
 
 let STATE = {users:[], preds:{}, results:{}, pins:{}, unlocked:[], champion:{picks:{}, winner:null}};
 let CU = null;
+let CURRENT_TAB = "knockout";
 
 // Mapa de progresión: [matchId_siguiente, slot("home"|"away"), matchId_origen]
 const PROGRESSION = [
@@ -879,6 +880,7 @@ document.querySelectorAll(".tab").forEach((tab, i) => {
 
 function showTab(t){
   if(t==="admin"&&CU!=="Juan") return;
+  CURRENT_TAB = t;
   ["knockout","history","calendar","leaderboard","stats","admin"].forEach((x,i)=>{
     document.getElementById("tab-"+x).classList.toggle("active", x===t);
     document.querySelectorAll(".tab")[i].classList.toggle("active", x===t);
@@ -890,6 +892,15 @@ function showTab(t){
   if(t==="stats") renderStats();
   if(t==="knockout") renderMatches("knockout");
 }
+
+// Al volver de segundo plano (pantalla bloqueada, cambio de app), los timers
+// del navegador se pausan y el estado Abierto/Cerrado queda desactualizado.
+// Al recuperar el foco, se refresca la pestaña actual con la hora real.
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible" && CU){
+    showTab(CURRENT_TAB);
+  }
+});
 
 function calcPts(p,r){
   if(!p||!r) return -1;
