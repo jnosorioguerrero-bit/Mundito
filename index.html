@@ -66,6 +66,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .champion-picked img{width:36px;height:24px;object-fit:cover;border-radius:4px;border:1.5px solid rgba(255,255,255,.4)}
 .champion-picked-name{font-size:15px;font-weight:800}
 .champion-picked-pts{font-size:11px;opacity:.8;margin-top:2px}
+.champ-picks{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18)}
+.champ-picks-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.75;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.champ-picks-title:hover{opacity:1}
+.champ-pick-list{display:flex;flex-direction:column;gap:4px}
+.champ-pick-item{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.1)}
+.champ-pick-name{font-weight:600}
+.champ-pick-team{display:flex;align-items:center;gap:6px}
+.champ-pick-flag{width:20px;height:14px;object-fit:cover;border-radius:2px;flex-shrink:0}
+.champ-pick-team.eliminated{opacity:.55}
+.champ-pick-team.eliminated .champ-pick-country{text-decoration:line-through}
 .section{display:none}
 .section.active{display:block}
 .login-card{background:#fff;border:1px solid #e0e0d8;border-radius:14px;padding:1.75rem;max-width:380px;margin:0 auto;border-top:4px solid var(--wc-blue)}
@@ -719,6 +729,27 @@ function resolveWinner(matchId){
   return r.h > r.a ? src.home : src.away;
 }
 
+// Equipos ya eliminados: perdieron un partido de eliminatoria decidido,
+// o (una vez terminada la fase de grupos) nunca llegaron a la Eliminatoria de 32
+function getEliminatedTeams(){
+  const eliminated = new Set();
+  MATCHES.forEach(m=>{
+    if(!m.group || m.group.startsWith("Grupo")) return;
+    const winner = resolveWinner(m.id);
+    if(!winner) return;
+    const loser = winner === m.home ? m.away : m.home;
+    if(loser) eliminated.add(loser);
+  });
+  const groupMatches = MATCHES.filter(m => m.group && m.group.startsWith("Grupo"));
+  const groupsDone = groupMatches.length > 0 && groupMatches.every(m => (STATE.results||{})[m.id] !== undefined);
+  if(groupsDone){
+    const qualified = new Set();
+    MATCHES.filter(m => /^m\d+$/.test(m.id)).forEach(m => { qualified.add(m.home); qualified.add(m.away); });
+    COUNTRIES.forEach(c => { if(!qualified.has(c.name)) eliminated.add(c.name); });
+  }
+  return eliminated;
+}
+
 function applyKnockoutProgression(){
   PROGRESSION.forEach(([targetId, slot, sourceId]) => {
     const winner = resolveWinner(sourceId);
@@ -967,10 +998,42 @@ function renderMatches(mode){
       <button class="champion-btn" id="champ-btn">🏆 Apostar campeón (+10 pts)</button>`;
   }
 
+  // Apuestas de todos, con tachado para los equipos ya eliminados
+  const champPicksUsers = STATE.users || [];
+  let champPicksBlock = "";
+  if(champPicksUsers.length){
+    const eliminatedTeams = getEliminatedTeams();
+    const champPicksMap = STATE.champion?.picks || {};
+    const champPickItems = champPicksUsers.map(u=>{
+      const pick = champPicksMap[u];
+      const name = u===CU ? '👤 '+u : u;
+      if(!pick){
+        return `<div class="champ-pick-item"><span class="champ-pick-name">${name}</span><span class="champ-pick-team" style="opacity:.5">— sin apuesta —</span></div>`;
+      }
+      const c = COUNTRIES.find(x=>x.name===pick);
+      const isElim = eliminatedTeams.has(pick);
+      return `<div class="champ-pick-item">
+        <span class="champ-pick-name">${name}</span>
+        <span class="champ-pick-team${isElim?' eliminated':''}">
+          ${c?`<img class="champ-pick-flag" src="https://flagcdn.com/w40/${c.code}.png" alt="${pick}">`:''}
+          <span class="champ-pick-country">${pick}</span>${isElim?' ❌':''}
+        </span>
+      </div>`;
+    }).join('');
+    champPicksBlock = `<div class="champ-picks">
+      <div class="champ-picks-title" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.querySelector('.chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
+        <span>👥 Apuestas de todos (${champPicksUsers.length})</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="champ-pick-list" style="display:none">${champPickItems}</div>
+    </div>`;
+  }
+
   html += `<div class="champion-card">
     <div class="champion-title">🏆 Apuesta al Campeón</div>
     <div class="champion-sub">Cierra el viernes 19 Jun a las 23:59 · Vale 10 puntos</div>
     ${champContent}
+    ${champPicksBlock}
   </div>`;
 
   // En modo knockout: solo eliminatoria. En modo groups: solo grupos
